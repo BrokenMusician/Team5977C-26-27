@@ -6,17 +6,13 @@
 /*    Description:  V5 project                                                */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
-// this code is very much a work in progress if you're reading this right now, just know its because we got NO ROBOT
-
 
 #include "vex.h"
 
 using namespace vex;
 
-// A global instance of vex::brain used for printing to the V5 brain screen
-vex::brain       Brain;
+vex::brain Brain;
 
-// define your global instances of motors and other devices here
 motor LeftMotor1 = motor(PORT1, ratio18_1, false);
 motor LeftMotor2 = motor(PORT2, ratio18_1, false);
 motor RightMotor1 = motor(PORT3, ratio18_1, false);
@@ -37,20 +33,7 @@ int applyDeadband(int value) {
 }
 
 int clampPercent(int value) {
-    if (value > kMaxMotorPct) {de” button,
-    a more advanced trigger-based turn curve, or
-    a button to switch between normal and precision drive.
-    Verification
-    I checked the file diagnostics after editing and there are no reported errors in main.cpp.
-    
-    10:54 AM
-    18s
-    •
-    MAI-Code-1.1-Flash • 1.0 credits
-    remove the slow mode, just optimize my code
-    
-    10:55 AM
-    
+    if (value > kMaxMotorPct) {
         return kMaxMotorPct;
     }
     if (value < -kMaxMotorPct) {
