@@ -68,32 +68,42 @@ void printDriveDebug() {
     int turn = Controller1.Axis1.position(pct);
     int leftSpeed = forward + turn;
     int rightSpeed = forward - turn;
+    int throttle = (abs(leftSpeed) + abs(rightSpeed)) / 2;
+    const char* modeText = Competition.isDriverControl() ? "DRIVER" : "AUTO";
 
     Brain.Screen.clearScreen();
-    Brain.Screen.setCursor(1, 1);
-    Brain.Screen.print("[SYS] DRIVE HUD");
-    Brain.Screen.setCursor(2, 1);
-    Brain.Screen.print("----------------");
-    Brain.Screen.setCursor(3, 1);
-    Brain.Screen.print("FWD:%4d TURN:%4d", forward, turn);
-    Brain.Screen.setCursor(4, 1);
-    Brain.Screen.print("LEFT:%4d RIGHT:%4d", leftSpeed, rightSpeed);
-    Brain.Screen.setCursor(5, 1);
-    Brain.Screen.print("MODE:%s", Competition.isDriverControl() ? "DRIVER" : "AUTO");
+    Brain.Screen.setPenColor(white);
+    Brain.Screen.printAt(10, 12, "[SYS] GABRIEL LINK ACTIVE");
+    Brain.Screen.printAt(10, 24, "================================");
+    Brain.Screen.printAt(10, 36, "FWD:%4d | TURN:%4d | THR:%3d", forward, turn, throttle);
+    Brain.Screen.printAt(10, 48, "LEFT:%4d | RIGHT:%4d", leftSpeed, rightSpeed);
+    Brain.Screen.printAt(10, 60, "MODE: ");
+    Brain.Screen.printAt(58, 60, modeText);
+    Brain.Screen.printAt(120, 60, " | STATUS: LIVE");
+    Brain.Screen.printAt(10, 72, "PORTS: 1-4 | DRIVE: SPLIT ARCADE");
+    Brain.Screen.printAt(10, 84, "STATUS: READY");
+    Brain.Screen.printAt(10, 96, "--------------------------------");
+    Brain.Screen.printAt(10, 108, "AI LINK: STABLE");
 }
 
 void initializeDrive() {
     LeftDrive.setStopping(brake);
     RightDrive.setStopping(brake);
     Brain.Screen.clearScreen();
-    Brain.Screen.setCursor(1, 1);
-    Brain.Screen.print("[BOOT] GABRIEL DNA SIGNATURE DETECTED ENABLING GABRIEL ATTACK MODE");
-    Brain.Screen.setCursor(2, 1);
-    Brain.Screen.print("------------------------");
-    Brain.Screen.setCursor(3, 1);
-    Brain.Screen.print("SYSTEMS ONLINE");
-    Brain.Screen.setCursor(4, 1);
-    Brain.Screen.print("STATUS: READY");
+    Brain.Screen.setPenColor(white);
+
+    Brain.Screen.printAt(10, 12, "GABRIEL DNA SIGNATURE DETECTED");
+    Brain.Screen.printAt(10, 24, "ENABLING GABRIEL ATTACK MODE");
+    Brain.Screen.printAt(10, 36, "================================");
+    Brain.Screen.printAt(10, 52, "SYSTEMS: ONLINE");
+    Brain.Screen.printAt(10, 64, "TARGET: DUAL-MOTOR DRIVE");
+    Brain.Screen.printAt(10, 76, "STATUS: READY");
+    Brain.Screen.printAt(10, 88, "AI LINK: STABLE");
+    Brain.Screen.printAt(10, 100, "--------------------------------");
+    Brain.Screen.printAt(10, 112, "BOOT SEQUENCE COMPLETE");
+
+    this_thread::sleep_for(1000);
+    Brain.Screen.clearScreen();
 }
 
 int main() {
