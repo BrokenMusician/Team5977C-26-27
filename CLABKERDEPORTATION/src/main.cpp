@@ -73,7 +73,7 @@ void printDriveDebug() {
 
     Brain.Screen.clearScreen();
     Brain.Screen.setPenColor(white);
-    Brain.Screen.printAt(10, 12, "[SYS] GABRIEL LINK ACTIVE");
+    Brain.Screen.printAt(10, 12, "[SYS] DRILL-BIT LINK ACTIVE");
     Brain.Screen.printAt(10, 24, "================================");
     Brain.Screen.printAt(10, 36, "FWD:%4d | TURN:%4d | THR:%3d", forward, turn, throttle);
     Brain.Screen.printAt(10, 48, "LEFT:%4d | RIGHT:%4d", leftSpeed, rightSpeed);
@@ -92,8 +92,8 @@ void initializeDrive() {
     Brain.Screen.clearScreen();
     Brain.Screen.setPenColor(white);
 
-    Brain.Screen.printAt(10, 12, "GABRIEL DNA SIGNATURE DETECTED");
-    Brain.Screen.printAt(10, 24, "ENABLING GABRIEL ATTACK MODE");
+    Brain.Screen.printAt(10, 12, "DRILL-BIT DNA SIGNATURE DETECTED");
+    Brain.Screen.printAt(10, 24, "ENABLING DRILL-BIT ATTACK MODE");
     Brain.Screen.printAt(10, 36, "================================");
     Brain.Screen.printAt(10, 52, "SYSTEMS: ONLINE");
     Brain.Screen.printAt(10, 64, "TARGET: DUAL-MOTOR DRIVE");
