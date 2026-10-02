@@ -63,6 +63,25 @@ void driveArcadeSplit() {
     RightDrive.spin(fwd, clampPercent(rightSpeed), pct);
 }
 
+void printDriveDebug() {
+    int forward = Controller1.Axis3.position(pct);
+    int turn = Controller1.Axis1.position(pct);
+    int leftSpeed = forward + turn;
+    int rightSpeed = forward - turn;
+
+    Brain.Screen.clearScreen();
+    Brain.Screen.setCursor(1, 1);
+    Brain.Screen.print("[SYS] DRIVE HUD");
+    Brain.Screen.setCursor(2, 1);
+    Brain.Screen.print("----------------");
+    Brain.Screen.setCursor(3, 1);
+    Brain.Screen.print("FWD:%4d TURN:%4d", forward, turn);
+    Brain.Screen.setCursor(4, 1);
+    Brain.Screen.print("LEFT:%4d RIGHT:%4d", leftSpeed, rightSpeed);
+    Brain.Screen.setCursor(5, 1);
+    Brain.Screen.print("MODE:%s", Competition.isDriverControl() ? "DRIVER" : "AUTO");
+}
+
 void initializeDrive() {
     LeftDrive.setStopping(brake);
     RightDrive.setStopping(brake);
@@ -82,6 +101,7 @@ int main() {
             RightDrive.stop();
         }
 
-        this_thread::sleep_for(10);
+        printDriveDebug();
+        this_thread::sleep_for(5);
     }
 }
