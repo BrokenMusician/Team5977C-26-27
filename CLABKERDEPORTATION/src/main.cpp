@@ -86,7 +86,14 @@ void initializeDrive() {
     LeftDrive.setStopping(brake);
     RightDrive.setStopping(brake);
     Brain.Screen.clearScreen();
-    Brain.Screen.printAt(10, 50, "Gabriel detected activating GABRIEL ATTACK MODE");
+    Brain.Screen.setCursor(1, 1);
+    Brain.Screen.print("[BOOT] GABRIEL DNA SIGNATURE DETECTED ENABLING GABRIEL ATTACK MODE");
+    Brain.Screen.setCursor(2, 1);
+    Brain.Screen.print("------------------------");
+    Brain.Screen.setCursor(3, 1);
+    Brain.Screen.print("SYSTEMS ONLINE");
+    Brain.Screen.setCursor(4, 1);
+    Brain.Screen.print("STATUS: READY");
 }
 
 int main() {
