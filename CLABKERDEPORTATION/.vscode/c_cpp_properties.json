@@ -15,34 +15,78 @@
 	},
 	"configurations": [
 		{
-			"name": "Win32",
+			"name": "VEX V5",
 			"includePath": [
 				"${vex_sdkIncludes}"
 			],
 			"compilerPath": "${vex_compilerPath}",
 			"cStandard": "gnu99",
 			"cppStandard": "gnu++11",
-			"intelliSenseMode": "windows-clang-x86"
-		},
-		{
-			"name": "Mac",
-			"includePath": [
-				"${vex_sdkIncludes}"
+			"intelliSenseMode": "linux-clang-arm",
+			"defines": [
+				"VexV5",
+				"__ARM_ARCH_7A__",
+				"__thumb__",
+				"__ARM_NEON__",
+				"__ARM_PCS_VFP",
+				"__INT32_TYPE__=long",
+				"__UINT32_TYPE__=unsigned long",
+				"__SIZE_TYPE__=unsigned int",
+				"__PTRDIFF_TYPE__=int",
+				"__WCHAR_TYPE__=int",
+				"__WINT_TYPE__=int",
+				"__ARM_FEATURE_FMA=1",
+				"__ARM_FP=0xe",
+				"__ARM_FP16_FORMAT_IEEE=1",
+				"__ARM_FP16_ARGS=1",
+				"__ARM_SIZEOF_WCHAR_T=4",
+				"__ARM_SIZEOF_MINIMAL_ENUM=1",
+				"__GXX_ABI_VERSION=1002",
+				"__GXX_TYPEINFO_EQUALITY_INLINE=0",
+				"__GXX_MERGED_TYPEINFO_NAMES=0",
+				"__GXX_WEAK=1",
+				"__EXCEPTIONS=0",
+				"__GXX_RTTI=0",
+				"__USING_SJLJ_EXCEPTIONS__=0",
+				"__ARM_EABI__=1",
+				"__ARM_PCS=1",
+				"__SOFTFP__=1",
+				"_GNU_SOURCE=1",
+				"__STDC_HOSTED__=1",
+				"__STDC_UTF_16__=1",
+				"__STDC_UTF_32__=1",
+				"__STDC_VERSION__=201112L",
+				"__cplusplus=201103L",
+				"__builtin_powf=1",
+				"__builtin_sinf=1",
+				"__builtin_cosf=1",
+				"__builtin_sin=1",
+				"__builtin_cos=1",
+				"__builtin_abs=1"
 			],
-			"compilerPath": "${vex_compilerPath}",
-			"cStandard": "gnu99",
-			"cppStandard": "gnu++11",
-			"intelliSenseMode": "macos-clang-x86"
-		},
-		{
-			"name": "Linux",
-			"includePath": [
-				"${vex_sdkIncludes}"
+			"compilerArgs": [
+				"-target",
+				"thumbv7-none-eabi",
+				"-march=armv7-a",
+				"-mfpu=neon",
+				"-mfloat-abi=softfp",
+				"-fshort-enums",
+				"-Wno-unknown-attributes",
+				"-fno-rtti",
+				"-fno-threadsafe-statics",
+				"-fno-exceptions",
+				"-ffunction-sections",
+				"-fdata-sections",
+				"-Os",
+				"-Wall",
+				"-Werror=return-type"
 			],
-			"compilerPath": "",
-			"cStandard": "gnu99",
-			"cppStandard": "gnu++11",
-			"intelliSenseMode": "linux-clang-x86"
+			"forcedInclude": [
+				"${vex_sdkPath}/gcc/include/math.h",
+				"${vex_sdkPath}/gcc/include/stdlib.h",
+				"${vex_sdkPath}/clang/8.0.0/include/stddef.h",
+				"${vex_sdkPath}/clang/8.0.0/include/stdint.h"
+			]
 		}
 	],
 	"version": 4

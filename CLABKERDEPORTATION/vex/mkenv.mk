@@ -59,12 +59,20 @@ Q =
 endif
 
 # compile and link tools
-CC      = clang
-CXX     = clang
-OBJCOPY = arm-none-eabi-objcopy
-SIZE    = arm-none-eabi-size
-LINK    = arm-none-eabi-ld
-ARCH    = arm-none-eabi-ar
+# Toolchain path - try to find it relative to SDK or use environment
+ifeq ("$(origin TOOLCHAIN_PATH)", "command line")
+# Use provided toolchain path
+else
+# Default to standard VEX extension location
+TOOLCHAIN_PATH = C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_win32
+endif
+
+CC      = "$(TOOLCHAIN_PATH)/clang/bin/clang.exe"
+CXX     = "$(TOOLCHAIN_PATH)/clang/bin/clang.exe"
+OBJCOPY = "$(TOOLCHAIN_PATH)/gcc/bin/arm-none-eabi-objcopy.exe"
+SIZE    = "$(TOOLCHAIN_PATH)/gcc/bin/arm-none-eabi-size.exe"
+LINK    = "$(TOOLCHAIN_PATH)/gcc/bin/arm-none-eabi-ld.exe"
+ARCH    = "$(TOOLCHAIN_PATH)/gcc/bin/arm-none-eabi-ar.exe"
 ECHO    = @echo
 DEFINES = -DVexV5
 
@@ -85,8 +93,8 @@ CLEAN = $(RMDIR) $(BUILD) 2> /dev/null || :
 endif
 
 # toolchain include and lib locations
-TOOL_INC  = -I"$(VEX_SDK_PATH)/$(PLATFORM)/clang/$(HEADERS)/include" -I"$(VEX_SDK_PATH)/$(PLATFORM)/gcc/include/c++/4.9.3"  -I"$(VEX_SDK_PATH)/$(PLATFORM)/gcc/include/c++/4.9.3/arm-none-eabi/armv7-ar/thumb" -I"$(VEX_SDK_PATH)/$(PLATFORM)/gcc/include"
-TOOL_LIB  = -L"$(VEX_SDK_PATH)/$(PLATFORM)/gcc/libs"
+TOOL_INC  = -I"$(VEX_SDK_PATH)/clang/$(HEADERS)/include" -I"$(VEX_SDK_PATH)/gcc/include/c++/4.9.3"  -I"$(VEX_SDK_PATH)/gcc/include/c++/4.9.3/arm-none-eabi/armv7-ar/thumb" -I"$(VEX_SDK_PATH)/gcc/include"
+TOOL_LIB  = -L"$(VEX_SDK_PATH)/gcc/libs"
 
 # compiler flags
 CFLAGS_CL = -target thumbv7-none-eabi -fshort-enums -Wno-unknown-attributes -U__INT32_TYPE__ -U__UINT32_TYPE__ -D__INT32_TYPE__=long -D__UINT32_TYPE__='unsigned long' 
@@ -95,7 +103,7 @@ CFLAGS    = ${CFLAGS_CL} ${CFLAGS_V7} -Os -Wall -Werror=return-type -ansi -std=g
 CXX_FLAGS = ${CFLAGS_CL} ${CFLAGS_V7} -Os -Wall -Werror=return-type -fno-rtti -fno-threadsafe-statics -fno-exceptions  -std=gnu++11 -ffunction-sections -fdata-sections $(DEFINES)
 
 # linker flags
-LNK_FLAGS = -nostdlib -T "$(VEX_SDK_PATH)/$(PLATFORM)/lscript.ld" -R "$(VEX_SDK_PATH)/$(PLATFORM)/stdlib_0.lib" -Map="$(BUILD)/$(PROJECT).map" --gc-section -L"$(VEX_SDK_PATH)/$(PLATFORM)" ${TOOL_LIB}
+LNK_FLAGS = -nostdlib -T "$(VEX_SDK_PATH)/lscript.ld" -R "$(VEX_SDK_PATH)/stdlib_0.lib" -Map="$(BUILD)/$(PROJECT).map" --gc-section -L"$(VEX_SDK_PATH)" ${TOOL_LIB}
 
 # future statuc library
 PROJECTLIB = lib$(PROJECT)
@@ -106,5 +114,5 @@ LIBS =  --start-group -lv5rt -lstdc++ -lc -lm -lgcc --end-group
 
 # include file paths
 INC += $(addprefix -I, ${INC_F})
-INC += -I"$(VEX_SDK_PATH)/$(PLATFORM)/include"
+INC += -I"$(VEX_SDK_PATH)/include"
 INC += ${TOOL_INC}
