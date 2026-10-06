@@ -767,7 +767,7 @@ int konamiCode[10] = {0, 0, 1, 1, 2, 2, 3, 3, 4, 5}; // Up Up Down Down Left Lef
 int konamiIndex = 0;
 bool konamiActivated = false;
 int easterEggTimer = 0;
-enum EasterEggType { EGG_NONE, EGG_KONAMI, EGG_RAINBOW, EGG_MATRIX, EGG_RETRO, EGG_HYPER };
+enum EasterEggType { EGG_NONE, EGG_KONAMI, EGG_RAINBOW, EGG_MATRIX, EGG_RETRO, EGG_HYPER, EGG_CYBERPUNK, EGG_GLITCH_ART, EGG_NEON_DREAMS, EGG_VOID, EGG_HOLOGRAM, EGG_SYNTHWAVE, EGG_DIGITAL_RAIN, EGG_PLASMA };
 EasterEggType activeEasterEgg = EGG_NONE;
 
 // Holographic UI elements
@@ -3600,10 +3600,153 @@ void drawEasterEggs() {
                 gLine(x1, y1, x2, y2, lc);
             }
             break;
-        default:
+        case EGG_CYBERPUNK:
+            // Cyberpunk 2077 style - neon grid with glitch
+            for (int y = 0; y < 240; y += 8) {
+                float wave = sinf(uiFrame * 0.05f + y * 0.1f) * 0.5f + 0.5f;
+                color c = mix8(cAccent2Rgb, cCyanRgb, (int)(wave * 256));
+                gRect(0, y, 480, 1, c);
+            }
+            for (int x = 0; x < 480; x += 16) {
+                float wave = sinf(uiFrame * 0.03f + x * 0.05f) * 0.5f + 0.5f;
+                color c = mix8(cAccentRgb, cGoldRgb, (int)(wave * 256));
+                gRect(x, 0, 1, 240, c);
+            }
+            // Glitch text
+            if ((uiFrame / 10) % 2 == 0) {
+                gTextC(240 + (rand() % 6 - 3), 120 + (rand() % 6 - 3), 20, cGold, "CYBERPUNK MODE");
+            }
             break;
-    }
-}
+        case EGG_GLITCH_ART:
+            // Glitch art - corrupted visuals
+            for (int i = 0; i < 20; ++i) {
+                int x = rand() % 480;
+                int y = rand() % 240;
+                int w = rand() % 100 + 10;
+                int h = rand() % 20 + 2;
+                color c = color(rand() % 256, rand() % 256, rand() % 256);
+                gRect(x, y, w, h, c);
+            }
+            // Scanline corruption
+            for (int y = 0; y < 240; y += 4) {
+                if (rand() % 10 == 0) {
+                    int x = rand() % 480;
+                    int w = rand() % 200;
+                    gRect(x, y, w, 2, color(rand() % 256, rand() % 256, rand() % 256));
+                }
+            }
+            break;
+        case EGG_NEON_DREAMS:
+            // Neon dreams - soft glowing aesthetic
+            for (int y = 0; y < 240; y += 2) {
+                float hue = (uiFrame * 0.02f + y * 0.01f);
+                int r = (int)(128 + 127 * sinf(hue));
+                int g = (int)(128 + 127 * sinf(hue + 2.094f));
+                int b = (int)(128 + 127 * sinf(hue + 4.188f));
+                color c = color(r, g, b);
+                gRect(0, y, 480, 1, mix8(c, cBg, 200));
+            }
+            // Floating orbs
+            for (int i = 0; i < 8; ++i) {
+                float angle = uiFrame * 0.01f + i * 0.785f;
+                int x = 240 + (int)(100 * cosf(angle));
+                int y = 120 + (int)(60 * sinf(angle));
+                int r = 15 + (int)(10 * sinf(uiFrame * 0.05f + i));
+                color c = color(rand() % 128 + 128, rand() % 128 + 128, 255);
+                gRing(x, y, r, c);
+                gDot(x, y, r/2, mix8(c, cText, 128));
+            }
+            break;
+        case EGG_VOID:
+            // The Void - dark, mysterious
+            gRect(0, 0, 480, 240, cBg);
+            for (int i = 0; i < 100; ++i) {
+                int x = (rand() * 480) % 480;
+                int y = (rand() * 240) % 240;
+                int sz = rand() % 3;
+                color c = color(rand() % 50, rand() % 50, rand() % 80 + 100);
+                gDot(x, y, sz, c);
+            }
+            // Pulsing void center
+            float pulse = sinf(uiFrame * 0.1f) * 0.5f + 0.5f;
+            int voidR = (int)(50 * pulse + 20);
+            gRing(240, 120, voidR, cAccent2);
+            gRing(240, 120, voidR + 10, mix8(cAccent2Rgb, cBgRgb, 128));
+            gTextC(240, 120, 15, cAccent2, "THE VOID STARES BACK");
+            break;
+                    case EGG_HOLOGRAM:
+                        // Holographic projection effect
+                        for (int y = 0; y < 240; y += 3) {
+                            float alpha = 0.3f + 0.2f * sinf(uiFrame * 0.05f + y * 0.1f);
+                            color c = mix8(cCyanRgb, cBgRgb, (int)(alpha * 256));
+                            gRect(0, y, 480, 1, c);
+                        }
+                        // Floating hologram elements
+                        for (int i = 0; i < 6; ++i) {
+                            float angle = uiFrame * 0.02f + i * 1.047f;
+                            int x = 240 + (int)(120 * cosf(angle));
+                            int y = 120 + (int)(80 * sinf(angle));
+                            int r = 10 + (int)(5 * sinf(uiFrame * 0.08f + i));
+                            color c = mix8(cCyanRgb, cTextRgb, 128);
+                            gRing(x, y, r, c);
+                            gLine(240, 120, x, y, mix8(c, cBg, 200));
+                        }
+                        // Hologram text
+                        if ((uiFrame / 15) % 2 == 0) {
+                            gTextC(240, 120, 15, cCyan, "HOLOGRAPHIC PROJECTION");
+                        }
+                        break;
+                    case EGG_SYNTHWAVE:
+                        // Synthwave sunset aesthetic
+                        for (int y = 0; y < 240; ++y) {
+                            float t = y / 240.0f;
+                            int r = (int)(20 + 100 * t + 50 * sinf(uiFrame * 0.01f));
+                            int g = (int)(10 + 30 * t);
+                            int b = (int)(50 + 100 * (1.0f - t) + 50 * cosf(uiFrame * 0.01f));
+                            color c = color(clampInt(r, 0, 255), clampInt(g, 0, 255), clampInt(b, 0, 255));
+                            gRect(0, y, 480, 1, c);
+                        }
+                        // Grid lines
+                        for (int i = 0; i < 20; ++i) {
+                            float y = 240 - i * 12 + uiFrame * 0.5f;
+                            if (y < 0) y += 240;
+                            color c = mix8(cGoldRgb, cAccent2Rgb, (int)((i / 20.0f) * 256));
+                            gRect(0, (int)y, 480, 1, c);
+                        }
+                        // Sun
+                        int sunY = 180 + (int)(20 * sinf(uiFrame * 0.03f));
+                        gDot(240, sunY, 30, cGold);
+                        gRing(240, sunY, 35, cAccent2);
+                        break;
+                    case EGG_DIGITAL_RAIN:
+                        // Digital rain - green code falling
+                        for (int x = 0; x < 480; x += 10) {
+                            for (int i = 0; i < 15; ++i) {
+                                int y = (i * 16 + uiFrame * 3 + x * 7) % 240;
+                                int brightness = 255 - i * 15;
+                                color c = color(0, brightness, 0);
+                                gTextC(x + 5, y, 7, c, "%c", '0' + (rand() % 10));
+                            }
+                        }
+                        break;
+                    case EGG_PLASMA:
+                        // Plasma effect
+                        for (int y = 0; y < 240; y += 2) {
+                            for (int x = 0; x < 480; x += 2) {
+                                float v = sinf(x * 0.05f + uiFrame * 0.02f) + sinf(y * 0.03f + uiFrame * 0.01f) + 
+                                          sinf((x + y) * 0.02f + uiFrame * 0.03f) + sinf(sqrtf(x*x + y*y) * 0.05f + uiFrame * 0.01f);
+                                v = (v + 4.0f) / 8.0f;
+                                int r = (int)(128 + 127 * sinf(v * 6.28f));
+                                int g = (int)(128 + 127 * sinf(v * 6.28f + 2.094f));
+                                int b = (int)(128 + 127 * sinf(v * 6.28f + 4.188f));
+                                gRect(x, y, 2, 2, color(r, g, b));
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
 
 void checkKonamiCode(int button) {
     if (button == konamiCode[konamiIndex]) {
@@ -4000,8 +4143,13 @@ void initializeDrive() {
     
     // Initialize achievements
     unlockAchievement("FIRST BOOT", "Started VEXTOP for the first time", cAccent);
+        unlockAchievement("WARRIOR SPIRIT", "Team 5977C - The Warriors", cGold);
+        unlockAchievement("CYBERPUNK", "Neon dreams in a digital world", cAccent2);
+        unlockAchievement("VOID WALKER", "Stared into the abyss", cDanger);
+        unlockAchievement("GLITCH MASTER", "Corrupted the system", cWarn);
+        unlockAchievement("NEON DREAMER", "Chased electric sheep", cCyan);
     
-    bootAnimation();
+        bootAnimation();
 }
 
 int main() {
