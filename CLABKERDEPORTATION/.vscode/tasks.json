@@ -1,0 +1,43 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "VEX: Build Project",
+			"type": "shell",
+			"command": "make",
+			"args": [
+				"VERBOSE=1"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"detail": "Builds the VEX V5 project using the VEX toolchain"
+		},
+		{
+			"label": "VEX: Clean Project",
+			"type": "shell",
+			"command": "make",
+			"args": [
+				"clean"
+			],
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "Cleans the build directory"
+		},
+		{
+			"label": "VEX: Upload to Brain",
+			"type": "shell",
+			"command": "make",
+			"args": [
+				"upload"
+			],
+			"group": "test",
+			"problemMatcher": [],
+			"detail": "Uploads the built binary to the V5 Brain"
+		}
+	]
+}

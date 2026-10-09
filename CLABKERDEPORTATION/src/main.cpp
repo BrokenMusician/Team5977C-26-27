@@ -43,7 +43,7 @@ int transitionFramesLeft = 0;
 
 const int motorPorts[4] = {1, 2, 3, 4};
 const char* const motorNames[4] = {"LEFT A", "LEFT B", "RIGHT A", "RIGHT B"};
-const char* const tabNames[6] = {"DASH", "MOTORS", "GRAPH", "INPUT", "SYSTEM", "DEBUG"};
+const char* const tabNames[7] = {"DASH", "MOTORS", "GRAPH", "INPUT", "SYSTEM", "DEBUG", "DOOM"};
 const char* const buttonNames[12] = {"L1", "L2", "R1", "R2", "A", "B", "X", "Y",
                                      "UP", "DN", "LT", "RT"};
 
@@ -193,6 +193,10 @@ struct HologramRenderer {
 HologramRenderer hologramRenderer = {true, 0.3f, 0.1f, 0.5f, 0.8f, 0.9f, {0, 200, 255}, 3, 0.01f, 0.5f};
 
 // Volumetric holograms
+struct Vec3 {
+    float x, y, z;
+};
+
 struct VolumetricHologram {
     Vec3 position;
     Vec3 size;
@@ -1490,7 +1494,7 @@ static inline void drawChrome(const Tel& t) {
     }
     gLine(kSideW, 27, kSideW, 240, cLine);
     
-    for (int i = 0; i < 6; ++i) {
+    for (int i = 0; i < 7; ++i) {
         int y = kTabTop + i * kTabH;
         bool sel = i == selectedTab;
         if (sel) {
@@ -2344,8 +2348,9 @@ static inline void pageDebug(const Tel& t) {
                                                     case 3: pageInput(t); break;
                                                     case 4: pageSystem(t); break;
                                                     case 5: pageDebug(t); break;
-                                                    default: pageSystem(t); break;
-                                                }
+                                                                                        case 6: pageDoom(t); break;
+                                                                                        default: pageSystem(t); break;
+                                                                                    }
 
                             // Draw ambient particles on top
                             drawParticles();
@@ -2369,9 +2374,78 @@ static inline void pageDebug(const Tel& t) {
     }
 }
 
-/* ---------------------------------- touch --------------------------------- */
+    /* ---------------------------------- DOOM page --------------------------------- */
 
-void handleScreenTouch() {
+    static inline void pageDoom(const Tel& t) {
+        gCard(76, 32, 398, 200, "DOOM // VEX V5 PORT");
+    
+        // DOOM status display
+        Brain.Screen.setFont(prop20);
+        gTextC(275, 60, 12, cAccent, "DOOM");
+        Brain.Screen.setFont(mono12);
+    
+        // Instructions
+        gText(90, 90, cMuted, "CONTROLS:");
+        gText(90, 110, cText, "L-Stick Y: Move Forward/Back");
+        gText(90, 125, cText, "R-Stick X: Turn Left/Right");
+        gText(90, 140, cText, "L-Stick X: Strafe Left/Right");
+        gText(90, 155, cText, "R1: Fire");
+        gText(90, 170, cText, "B: Use/Open");
+        gText(90, 185, cText, "X: Enter");
+        gText(90, 200, cText, "Y: Escape/Menu");
+        gText(90, 215, cText, "D-Pad: Arrow Keys");
+        gText(90, 230, cText, "L2/R2: Prev/Next Weapon");
+    
+        // Status
+        gText(300, 90, cMuted, "STATUS:");
+        gText(300, 110, cGood, "WAD: doom1.wad (SD Card)");
+        gText(300, 125, cGood, "Engine: Chocolate Doom");
+        gText(300, 140, cWarn, "Sound: Not Supported");
+        gText(300, 155, cWarn, "Multiplayer: Not Supported");
+        gText(300, 170, cMuted, "Resolution: 320x200");
+        gText(300, 185, cMuted, "FPS: ~30 (V5 Brain)");
+    
+        // Launch button
+        static bool doomLaunched = false;
+        int btnX = 300, btnY = 200, btnW = 150, btnH = 40;
+        bool btnHover = Brain.Screen.pressing() && 
+            Brain.Screen.xPosition() >= btnX && Brain.Screen.xPosition() <= btnX + btnW &&
+            Brain.Screen.yPosition() >= btnY && Brain.Screen.yPosition() <= btnY + btnH;
+    
+        color btnBg = doomLaunched ? cDanger : btnHover ? cAccent : cGood;
+        color btnText = cBg;
+    
+        gRect(btnX, btnY, btnW, btnH, btnBg);
+        gBox(btnX, btnY, btnW, btnH, cText);
+        Brain.Screen.setFont(prop20);
+        gTextC(btnX + btnW/2, btnY + 28, 11, btnText, doomLaunched ? "RUNNING..." : "LAUNCH DOOM");
+        Brain.Screen.setFont(mono12);
+    
+        // Handle launch button press
+        if (Brain.Screen.pressing() && btnHover && !doomLaunched) {
+            doomLaunched = true;
+            // Note: Actual DOOM launch would require PROS kernel integration
+            // This is a placeholder for the UI
+        }
+    
+        // Animated DOOM logo
+        static int logoFrame = 0;
+        logoFrame++;
+        float pulse = sinf(logoFrame * 0.1f) * 0.5f + 0.5f;
+        color logoColor = mix8(cAccentRgb, cAccent2Rgb, (int)(pulse * 256));
+        Brain.Screen.setFont(prop60);
+        gTextC(275, 60, 30, logoColor, "DOOM");
+        Brain.Screen.setFont(mono12);
+    
+        // Particle effects for atmosphere
+        if (uiFrame % 20 == 0) {
+            spawnParticles(275 + rand() % 100 - 50, 60 + rand() % 20 - 10, 1, cAccent2, 0.5f, 1.5f, 1, 2, 800);
+        }
+    }
+
+    /* ---------------------------------- touch --------------------------------- */
+
+    void handleScreenTouch() {
     static bool wasTouching = false;
     bool touching = Brain.Screen.pressing();
     if (touching && !wasTouching) {
@@ -2379,7 +2453,7 @@ void handleScreenTouch() {
         int ty = Brain.Screen.yPosition();
         if (tx < kSideW && ty >= kTabTop) {
             int idx = (ty - kTabTop) / kTabH;
-            if (idx >= 0 && idx < 6) selectedTab = idx;  // Support all 6 tabs
+                    if (idx >= 0 && idx < 7) selectedTab = idx;  // Support all 7 tabs
         } else if (selectedTab == 3 && ty >= 188 && ty <= 226) {
             if (tx >= 320 && tx <= 356 && driveDeadbandPct > 0) --driveDeadbandPct;
                         else if (tx >= 430 && tx <= 466 && driveDeadbandPct < 25) ++driveDeadbandPct;
@@ -3657,7 +3731,7 @@ void drawEasterEggs() {
                 gDot(x, y, r/2, mix8(c, cText, 128));
             }
             break;
-        case EGG_VOID:
+        case EGG_VOID: {
             // The Void - dark, mysterious
             gRect(0, 0, 480, 240, cBg);
             for (int i = 0; i < 100; ++i) {
@@ -3674,7 +3748,8 @@ void drawEasterEggs() {
             gRing(240, 120, voidR + 10, mix8(cAccent2Rgb, cBgRgb, 128));
             gTextC(240, 120, 15, cAccent2, "THE VOID STARES BACK");
             break;
-                    case EGG_HOLOGRAM:
+                }
+                            case EGG_HOLOGRAM: {
                         // Holographic projection effect
                         for (int y = 0; y < 240; y += 3) {
                             float alpha = 0.3f + 0.2f * sinf(uiFrame * 0.05f + y * 0.1f);
