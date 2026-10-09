@@ -193,10 +193,6 @@ struct HologramRenderer {
 HologramRenderer hologramRenderer = {true, 0.3f, 0.1f, 0.5f, 0.8f, 0.9f, {0, 200, 255}, 3, 0.01f, 0.5f};
 
 // Volumetric holograms
-struct Vec3 {
-    float x, y, z;
-};
-
 struct VolumetricHologram {
     Vec3 position;
     Vec3 size;
@@ -2364,19 +2360,19 @@ static inline void pageDebug(const Tel& t) {
                                 gRect(rx, 27, 480 - rx, 213, cBg);
                                 gRect(rx, 27, 2, 213, cAccent);
                                 --transFrames;
-    }
-    Brain.Screen.render();
+                                                        }
+                                                        Brain.Screen.render();
     
-    // Warn if UI frame took >20ms (could starve drive at 50Hz)
-    if (Brain.Timer.time(msec) - renderStart > 20) {
-        Brain.Screen.setPenColor(cDanger);
-        Brain.Screen.printAt(10, 230, true, "UI LAG %dms", Brain.Timer.time(msec) - renderStart);
-    }
-}
+                                                        // Warn if UI frame took >20ms (could starve drive at 50Hz)
+                                                        if (Brain.Timer.time(msec) - renderStart > 20) {
+                                                            Brain.Screen.setPenColor(cDanger);
+                                                            Brain.Screen.printAt(10, 230, true, "UI LAG %dms", Brain.Timer.time(msec) - renderStart);
+                                                        }
+                                                    }
 
-    /* ---------------------------------- DOOM page --------------------------------- */
+                            /* ---------------------------------- DOOM page --------------------------------- */
 
-    static inline void pageDoom(const Tel& t) {
+                            static inline void pageDoom(const Tel& t) {
         gCard(76, 32, 398, 200, "DOOM // VEX V5 PORT");
     
         // DOOM status display
@@ -3771,7 +3767,7 @@ void drawEasterEggs() {
                             gTextC(240, 120, 15, cCyan, "HOLOGRAPHIC PROJECTION");
                         }
                         break;
-                    case EGG_SYNTHWAVE:
+                    case EGG_SYNTHWAVE: {
                         // Synthwave sunset aesthetic
                         for (int y = 0; y < 240; ++y) {
                             float t = y / 240.0f;
@@ -3793,7 +3789,8 @@ void drawEasterEggs() {
                         gDot(240, sunY, 30, cGold);
                         gRing(240, sunY, 35, cAccent2);
                         break;
-                    case EGG_DIGITAL_RAIN:
+                                        }
+                                        case EGG_DIGITAL_RAIN: {
                         // Digital rain - green code falling
                         for (int x = 0; x < 480; x += 10) {
                             for (int i = 0; i < 15; ++i) {
@@ -3804,7 +3801,8 @@ void drawEasterEggs() {
                             }
                         }
                         break;
-                    case EGG_PLASMA:
+                                                            }
+                                                            case EGG_PLASMA: {
                         // Plasma effect
                         for (int y = 0; y < 240; y += 2) {
                             for (int x = 0; x < 480; x += 2) {
