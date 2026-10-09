@@ -192,6 +192,11 @@ struct HologramRenderer {
 };
 HologramRenderer hologramRenderer = {true, 0.3f, 0.1f, 0.5f, 0.8f, 0.9f, {0, 200, 255}, 3, 0.01f, 0.5f};
 
+// Vec3 for 3D math
+struct Vec3 {
+    float x, y, z;
+};
+
 // Volumetric holograms
 struct VolumetricHologram {
     Vec3 position;
