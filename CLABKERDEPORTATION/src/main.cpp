@@ -353,7 +353,6 @@ AudioReverbZone audioReverbZones[8];
 int audioReverbZoneCount = 0;
 
 // 3D perspective system
-struct Vec3 { float x, y, z; };
 struct Mat4 { float m[16]; };
 Mat4 viewMatrix, projMatrix;
 float cameraYaw = 0, cameraPitch = 0, cameraDist = 300;
@@ -2365,26 +2364,26 @@ static inline void pageDebug(const Tel& t) {
                                 gRect(rx, 27, 480 - rx, 213, cBg);
                                 gRect(rx, 27, 2, 213, cAccent);
                                 --transFrames;
-                                                        }
-                                                        Brain.Screen.render();
-    
-                                                        // Warn if UI frame took >20ms (could starve drive at 50Hz)
-                                                        if (Brain.Timer.time(msec) - renderStart > 20) {
-                                                            Brain.Screen.setPenColor(cDanger);
-                                                            Brain.Screen.printAt(10, 230, true, "UI LAG %dms", Brain.Timer.time(msec) - renderStart);
-                                                        }
-                                                    }
+                                }
+                                Brain.Screen.render();
+
+                                // Warn if UI frame took >20ms (could starve drive at 50Hz)
+                                if (Brain.Timer.time(msec) - renderStart > 20) {
+                                    Brain.Screen.setPenColor(cDanger);
+                                    Brain.Screen.printAt(10, 230, true, "UI LAG %dms", Brain.Timer.time(msec) - renderStart);
+                                }
+                            }
 
                             /* ---------------------------------- DOOM page --------------------------------- */
 
                             static inline void pageDoom(const Tel& t) {
         gCard(76, 32, 398, 200, "DOOM // VEX V5 PORT");
-    
+
         // DOOM status display
         Brain.Screen.setFont(prop20);
         gTextC(275, 60, 12, cAccent, "DOOM");
         Brain.Screen.setFont(mono12);
-    
+
         // Instructions
         gText(90, 90, cMuted, "CONTROLS:");
         gText(90, 110, cText, "L-Stick Y: Move Forward/Back");
@@ -2396,7 +2395,7 @@ static inline void pageDebug(const Tel& t) {
         gText(90, 200, cText, "Y: Escape/Menu");
         gText(90, 215, cText, "D-Pad: Arrow Keys");
         gText(90, 230, cText, "L2/R2: Prev/Next Weapon");
-    
+
         // Status
         gText(300, 90, cMuted, "STATUS:");
         gText(300, 110, cGood, "WAD: doom1.wad (SD Card)");
@@ -2405,30 +2404,30 @@ static inline void pageDebug(const Tel& t) {
         gText(300, 155, cWarn, "Multiplayer: Not Supported");
         gText(300, 170, cMuted, "Resolution: 320x200");
         gText(300, 185, cMuted, "FPS: ~30 (V5 Brain)");
-    
+
         // Launch button
         static bool doomLaunched = false;
         int btnX = 300, btnY = 200, btnW = 150, btnH = 40;
-        bool btnHover = Brain.Screen.pressing() && 
+        bool btnHover = Brain.Screen.pressing() &&
             Brain.Screen.xPosition() >= btnX && Brain.Screen.xPosition() <= btnX + btnW &&
             Brain.Screen.yPosition() >= btnY && Brain.Screen.yPosition() <= btnY + btnH;
-    
+
         color btnBg = doomLaunched ? cDanger : btnHover ? cAccent : cGood;
         color btnText = cBg;
-    
+
         gRect(btnX, btnY, btnW, btnH, btnBg);
         gBox(btnX, btnY, btnW, btnH, cText);
         Brain.Screen.setFont(prop20);
         gTextC(btnX + btnW/2, btnY + 28, 11, btnText, doomLaunched ? "RUNNING..." : "LAUNCH DOOM");
         Brain.Screen.setFont(mono12);
-    
+
         // Handle launch button press
         if (Brain.Screen.pressing() && btnHover && !doomLaunched) {
             doomLaunched = true;
             // Note: Actual DOOM launch would require PROS kernel integration
             // This is a placeholder for the UI
         }
-    
+
         // Animated DOOM logo
         static int logoFrame = 0;
         logoFrame++;
@@ -2437,16 +2436,16 @@ static inline void pageDebug(const Tel& t) {
         Brain.Screen.setFont(prop60);
         gTextC(275, 60, 30, logoColor, "DOOM");
         Brain.Screen.setFont(mono12);
-    
+
         // Particle effects for atmosphere
         if (uiFrame % 20 == 0) {
             spawnParticles(275 + rand() % 100 - 50, 60 + rand() % 20 - 10, 1, cAccent2, 0.5f, 1.5f, 1, 2, 800);
         }
-    }
+                            }
 
-        /* ---------------------------------- touch --------------------------------- */
+                            /* ---------------------------------- touch --------------------------------- */
 
-        void handleScreenTouch() {
+                            void handleScreenTouch() {
     static bool wasTouching = false;
     bool touching = Brain.Screen.pressing();
     if (touching && !wasTouching) {
