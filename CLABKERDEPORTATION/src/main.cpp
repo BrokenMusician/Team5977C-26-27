@@ -44,6 +44,7 @@ int uiFrame = 0;
 bool doomStarted = false;
 bool doomStartRequested = false;
 bool doomStartBlocked = false;
+bool doomWadMissing = false;
 
 // Ultra-smooth adaptive render: 33ms (30Hz) driving, 66ms (15Hz) idle, 16ms (60Hz) transitions
 constexpr int kRenderIntervalMs = 33;
@@ -2407,12 +2408,14 @@ static inline void pageDebug(const Tel& t) {
                                             if (wad) {
                                                 fclose(wad);
                                                 doomStartBlocked = false;
+                                                doomWadMissing = false;
                                                 doomStarted = true;
                                                 LeftDrive.stop();
                                                 RightDrive.stop();
                                                 D_DoomMain();
                                             } else {
                                                 doomStartBlocked = false;
+                                                doomWadMissing = true;
                                             }
                                         }
                                     }
@@ -2484,7 +2487,7 @@ static inline void pageDebug(const Tel& t) {
 
                                     static inline void pageDoom(const Tel& t) {
                                         (void)t;
-                                        gCard(76, 32, 398, 200, "DOOM // VEXTOP PORT");
+                                        gCard(76, 32, 398, 200, "DOOM // INTEGRATED ENGINE");
                                         Brain.Screen.setFont(prop60);
                                         gTextC(275, 76, 30, cAccent, "DOOM");
                                         Brain.Screen.setFont(mono12);
@@ -2495,13 +2498,15 @@ static inline void pageDebug(const Tel& t) {
                                             gTextC(275, 150, 8, cText, "TAP A TAB TO PAUSE AND RETURN");
                                             gTextC(275, 175, 8, cMuted, "Touch DOOM again to resume.");
                                         } else {
-                                            gTextC(275, 146, 8, cMuted, "Use the controller to play.");
-                                            gRect(185, 170, 180, 42, doomStartBlocked ? cWarn : cGood);
-                                            gBox(185, 170, 180, 42, cText);
-                                            gTextC(275, 197, 8, cBg, "START DOOM");
-                                            gTextC(275, 226, 7, cMuted,
-                                                   doomStartBlocked ? "DISABLE ROBOT TO START" :
-                                                   Brain.SDcard.isInserted() ? "WAD REQUIRED: /usd/doom1.wad" : "INSERT MICROSD WITH WAD");
+                                            gTextC(275, 145, 8, cMuted, "Use the controller to play.");
+                                            gRect(185, 165, 180, 42, doomStartBlocked ? cWarn : cGood);
+                                            gBox(185, 165, 180, 42, cText);
+                                            gTextC(275, 192, 8, cBg, "START DOOM");
+                                            gTextC(275, 218, 7, doomStartBlocked ? cWarn : cMuted,
+                                                   doomStartBlocked ? "DISABLE ROBOT TO START" : "ROBOT MUST BE DISABLED");
+                                            gTextC(275, 230, 7, doomWadMissing ? cDanger : cMuted,
+                                                   doomWadMissing ? "MISSING: /usd/doom1.wad" :
+                                                   Brain.SDcard.isInserted() ? "WAD: /usd/doom1.wad" : "INSERT MICROSD WITH WAD");
                                         }
                                     }
 
@@ -2517,7 +2522,7 @@ static inline void pageDebug(const Tel& t) {
                                                 int idx = (ty - kTabTop) / kTabH;
                                                 if (idx >= 0 && idx < 7) selectedTab = idx;  // Support all 7 tabs
                                                 } else if (selectedTab == 6 && !doomStarted &&
-                                                           tx >= 185 && tx <= 365 && ty >= 170 && ty <= 212) {
+                                                           tx >= 185 && tx <= 365 && ty >= 165 && ty <= 207) {
                                                     doomStartRequested = true;
                                                 } else if (selectedTab == 3 && ty >= 188 && ty <= 226) {
                                                                     if (tx >= 320 && tx <= 356 && driveDeadbandPct > 0) --driveDeadbandPct;
