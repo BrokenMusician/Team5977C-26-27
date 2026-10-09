@@ -2338,66 +2338,41 @@ static inline void pageDebug(const Tel& t) {
                                     triggerThemeByPerformance(t);
     
                                     Brain.Screen.setFillColor(cBg);
-                                    Brain.Screen.clearScreen(cBg);
-                                    Brain.Screen.setFont(mono12);
-                                    drawChrome(t);
-                                    switch (selectedTab) {
-                                                    case 0: pageDash(t); break;
-                                                    case 1: pageMotors(t); break;
-                                                    case 2: pageGraph(t); break;
-                                                    case 3: pageInput(t); break;
-                                                    case 4: pageSystem(t); break;
-                                                    case 5: pageDebug(t); break;
-                                                                                                        case 6: pageDoom(t); break;
-                                                                                                        default: pageSystem(t); break;
-                                                                                                    }
+                                                                        Brain.Screen.clearScreen(cBg);
+                                                                        Brain.Screen.setFont(mono12);
+                                                                        drawChrome(t);
+                                                                        switch (selectedTab) {
+                                                                            case 0: pageDash(t); break;
+                                                                            case 1: pageMotors(t); break;
+                                                                            case 2: pageGraph(t); break;
+                                                                            case 3: pageInput(t); break;
+                                                                            case 4: pageSystem(t); break;
+                                                                            case 5: pageDebug(t); break;
+                                                                            case 6: pageDoom(t); break;
+                                                                            default: pageSystem(t); break;
+                                                                        }
 
-                                                                                // Draw ambient particles on top
-                                                                                drawParticles();
+                                                                        // Draw ambient particles on top
+                                                                        drawParticles();
 
-                                                                                // Draw advanced effects on top
-                                                                                drawAdvancedEffects();
+                                                                        // Draw advanced effects on top
+                                                                        drawAdvancedEffects();
 
-                                                                                // page transition: wipe reveal left -> right
-                                                                                if (transFrames > 0) {
-                                                                                    int rx = kSideW + 1 + (8 - transFrames) * 52;
-                                                                                    gRect(rx, 27, 480 - rx, 213, cBg);
-                                                                                    gRect(rx, 27, 2, 213, cAccent);
-                                                                                    --transFrames;
-                                                                                }
-                                                                                Brain.Screen.render();
+                                                                        // page transition: wipe reveal left -> right
+                                                                        if (transFrames > 0) {
+                                                                            int rx = kSideW + 1 + (8 - transFrames) * 52;
+                                                                            gRect(rx, 27, 480 - rx, 213, cBg);
+                                                                            gRect(rx, 27, 2, 213, cAccent);
+                                                                            --transFrames;
+                                                                        }
+                                                                        Brain.Screen.render();
 
-                                                                                // Warn if UI frame took >20ms (could starve drive at 50Hz)
-                                                                                if (Brain.Timer.time(msec) - renderStart > 20) {
-                                                                                    Brain.Screen.setPenColor(cDanger);
-                                                                                    Brain.Screen.printAt(10, 230, true, "UI LAG %dms", Brain.Timer.time(msec) - renderStart);
-                                                                                }
-                                                                            }
-
-                                                    /* ---------------------------------- DOOM page --------------------------------- */
-
-                                                    static inline void pageDoom(const Tel& t) {
-                                                        gCard(76, 32, 398, 200, "DOOM // VEX V5 PORT");
-
-                                                        // DOOM status display
-                                                        Brain.Screen.setFont(prop20);
-                                                        gTextC(275, 60, 12, cAccent, "DOOM");
-                                                        Brain.Screen.setFont(mono12);
-
-                                                        // Instructions
-                                                        gText(90, 90, cMuted, "CONTROLS:");
-                                                        gText(90, 110, cText, "L-Stick Y: Move Forward/Back");
-                                                        gText(90, 125, cText, "R-Stick X: Turn Left/Right");
-                                                        gText(90, 140, cText, "L-Stick X: Strafe Left/Right");
-                                                        gText(90, 155, cText, "R1: Fire");
-                                                        gText(90, 170, cText, "B: Use/Open");
-                                                        gText(90, 185, cText, "X: Enter");
-                                                        gText(90, 200, cText, "Y: Escape/Menu");
-                                                        gText(90, 215, cText, "D-Pad: Arrow Keys");
-                                                        gText(90, 230, cText, "L2/R2: Prev/Next Weapon");
-
-                                                        // Status
-                                                        gText(300, 90, cMuted, "STATUS:");
+                                                                        // Warn if UI frame took >20ms (could starve drive at 50Hz)
+                                                                        if (Brain.Timer.time(msec) - renderStart > 20) {
+                                                                            Brain.Screen.setPenColor(cDanger);
+                                                                            Brain.Screen.printAt(10, 230, true, "UI LAG %dms", Brain.Timer.time(msec) - renderStart);
+                                                                        }
+                                                                    }
                                                         gText(300, 110, cGood, "WAD: doom1.wad (SD Card)");
                                                         gText(300, 125, cGood, "Engine: Chocolate Doom");
                                                         gText(300, 140, cWarn, "Sound: Not Supported");
