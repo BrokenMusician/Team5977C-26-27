@@ -2381,16 +2381,16 @@ static inline void pageDebug(const Tel& t) {
 
                                     static inline void pageDoom(const Tel& t) {
                                         (void)t;
-                                        gCard(76, 32, 398, 200, "DOOM // IMPORT STATUS");
+                                        gCard(76, 32, 398, 200, "DOOM // SEPARATE PROJECT");
                                         Brain.Screen.setFont(prop60);
-                                        gTextC(275, 76, 30, cDanger, "DOOM");
+                                        gTextC(275, 76, 30, cAccent, "DOOM");
                                         Brain.Screen.setFont(mono12);
-                                        gTextC(275, 105, 10, cWarn, "NOT READY TO LAUNCH");
+                                        gTextC(275, 105, 10, cGood, "PORT SOURCE INCLUDED");
                                         gLine(92, 124, 458, 124, cLine);
-                                        gText(96, 148, cText, "This project contains a dashboard mockup only.");
-                                        gText(96, 168, cMuted, "No Doom engine or WAD file was imported.");
-                                        gText(96, 188, cMuted, "The V5 Brain cannot launch a desktop Doom port.");
-                                        gText(96, 216, cAccent, "Add a V5-compatible engine port to run Doom here.");
+                                        gText(96, 148, cText, "V5 Doom port is in the separate VexV5Doom folder.");
+                                        gText(96, 168, cMuted, "Build and upload that project with the PROS CLI.");
+                                        gText(96, 188, cMuted, "Copy doom1.wad to a FAT32 microSD card first.");
+                                        gText(96, 216, cAccent, "Doom runs as its own program, not inside this UI.");
                                     }
 
                                     /* ---------------------------------- touch --------------------------------- */
