@@ -212,6 +212,8 @@ void I_GetEvent (void)
     check_button(c_oldstate.d_b, c_state.d_b, KEY_USE);
     //x = enter
     check_button(c_oldstate.d_x, c_state.d_x, KEY_ENTER);
+    //a = confirm in Doom menus
+    check_button(c_oldstate.d_a, c_state.d_a, KEY_ENTER);
     //y = escape
     check_button(c_oldstate.d_y, c_state.d_y, KEY_ESCAPE);
 

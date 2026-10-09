@@ -17,6 +17,8 @@ using namespace vex;
 extern "C" {
 void D_DoomMain(void);
 void D_DoomFrame(void);
+int I_RunVexDoom(void (*entry)(void));
+const char* I_GetVexDoomError(void);
 void vexDoomPresent(const uint8_t* pixels, const uint32_t* palette, int width, int height);
 void vexDoomReadInput(int32_t* axes, int32_t* buttons);
 uint32_t vexDoomMillis(void);
@@ -43,8 +45,19 @@ int selectedTab = 0;
 int uiFrame = 0;
 bool doomStarted = false;
 bool doomStartRequested = false;
-bool doomStartBlocked = false;
 bool doomWadMissing = false;
+bool doomUnavailable = false;
+char doomExitMessage[96] = "";
+
+static void handleDoomExit(int result) {
+    doomStarted = false;
+    doomUnavailable = true;
+    if (result == 1) {
+        snprintf(doomExitMessage, sizeof(doomExitMessage), "%.90s", I_GetVexDoomError());
+    } else {
+        snprintf(doomExitMessage, sizeof(doomExitMessage), "GAME CLOSED");
+    }
+}
 
 // Ultra-smooth adaptive render: 33ms (30Hz) driving, 66ms (15Hz) idle, 16ms (60Hz) transitions
 constexpr int kRenderIntervalMs = 33;
@@ -74,8 +87,8 @@ struct Tel {
     float sLeft, sRight, sThr, sRpm[4];
     int peak;
 };
-// Seven tabs must fit in the 212 px sidebar below the header.
-constexpr int kTabH = 30;
+// Leave a dedicated footer below seven tabs in the 212 px sidebar.
+constexpr int kTabH = 26;
 constexpr int kTabTop = 28;
 
 // Reduced history for memory/CPU savings (60 samples @ 30Hz = 2 seconds)
@@ -85,11 +98,11 @@ constexpr int kTrail = 8;  // Increased for smoother trails
 struct Rgb { int r, g, b; };
 #define PAL(name, R, G, B) const Rgb name##Rgb = {R, G, B}; const color name(R, G, B);
 // Premium color palette with deeper contrast
-PAL(cBg, 6, 8, 14)
-PAL(cPanel, 12, 16, 26)
-PAL(cLine, 32, 42, 60)
+PAL(cBg, 18, 22, 32)
+PAL(cPanel, 34, 42, 58)
+PAL(cLine, 76, 92, 116)
 PAL(cText, 240, 248, 255)
-PAL(cMuted, 96, 112, 136)
+PAL(cMuted, 164, 180, 204)
 PAL(cAccent, 0, 210, 255)
 PAL(cAccent2, 255, 50, 140)
 PAL(cGood, 50, 255, 140)
@@ -111,16 +124,18 @@ int chromaticOffset = 0;
 bool chromaticEnabled = true;
 
 // Vignette strength
-float vignetteStrength = 0.3f;
+// These overlays repaint existing pixels with the background color; keep them
+// disabled so they cannot erase the screen chrome or dashboard details.
+float vignetteStrength = 0.0f;
 
 // Scanline intensity
-float scanlineIntensity = 0.15f;
+float scanlineIntensity = 0.0f;
 
 // Bloom threshold
 int bloomThreshold = 200;
 
 // CRT curvature
-float crtCurvature = 0.02f;
+float crtCurvature = 0.0f;
 
 // Glitch effect
 int glitchTimer = 0;
@@ -730,6 +745,8 @@ struct Notification {
 };
 Notification notifications[8];
 int notificationCount = 0;
+void addNotification(const char* text, color c, int durationMs);
+void drawNotifications();
 
 // Achievement system
 struct Achievement {
@@ -1152,10 +1169,12 @@ DriveOutput mixDrive(int forward, int turn) {
 
 void driveArcadeSplit() {
     DriveOutput output = mixDrive(
-        applyDeadband(Controller1.Axis3.position(pct)),
-        applyDeadband(Controller1.Axis1.position(pct)));
-    LeftDrive.spin(fwd, output.left, pct);
-    RightDrive.spin(fwd, output.right, pct);
+        applyDeadband(Controller1.Axis1.position(pct)),
+        applyDeadband(Controller1.Axis3.position(pct)));
+    // This robot's drivetrain motors are oriented opposite to the UI's logical
+    // forward direction, so invert both sides while keeping steering balanced.
+    LeftDrive.spin(fwd, -output.left, pct);
+    RightDrive.spin(fwd, -output.right, pct);
 }
 
 /* ----------------------------- draw primitives ---------------------------- */
@@ -1168,7 +1187,7 @@ void gText(int x, int y, color c, const char* fmt, ...) {
     vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
     Brain.Screen.setPenColor(c);
-    Brain.Screen.printAt(x, y, true, "%s", buf);
+    Brain.Screen.printAt(x, y, false, "%s", buf);
 }
 
 void gTextC(int cx, int y, int charW, color c, const char* fmt, ...) {
@@ -1178,7 +1197,7 @@ void gTextC(int cx, int y, int charW, color c, const char* fmt, ...) {
     vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
     Brain.Screen.setPenColor(c);
-    Brain.Screen.printAt(cx - static_cast<int>(strlen(buf)) * charW / 2, y, true, "%s", buf);
+    Brain.Screen.printAt(cx - static_cast<int>(strlen(buf)) * charW / 2, y, false, "%s", buf);
 }
 
 void gLine(int x1, int y1, int x2, int y2, color c) {
@@ -1204,37 +1223,52 @@ extern "C" void vexDoomPresent(const uint8_t* pixels, const uint32_t* palette,
         }
     }
 
-    Brain.Screen.setFillColor(color(6, 8, 14));
+    Brain.Screen.setFillColor(cBg);
     Brain.Screen.clearScreen();
     Brain.Screen.drawImageFromBuffer(frame, kSideW, kTabTop, 414, 212);
-    Brain.Screen.setPenColor(color(12, 16, 26));
-    Brain.Screen.drawRectangle(0, 0, 480, 27, color(12, 16, 26));
-    Brain.Screen.drawRectangle(0, kTabTop, kSideW, 212, color(12, 16, 26));
+    Brain.Screen.setPenColor(cPanel);
+    Brain.Screen.drawRectangle(0, 0, 480, 27, cPanel);
+    Brain.Screen.drawRectangle(0, kTabTop, kSideW, 212, cPanel);
     Brain.Screen.setFont(mono12);
-    Brain.Screen.setPenColor(color(0, 210, 255));
-    Brain.Screen.printAt(10, 19, true, "VEXTOP // DOOM");
+    Brain.Screen.setPenColor(cAccent);
+    Brain.Screen.printAt(10, 19, false, "VEXTOP");
+    Brain.Screen.setPenColor(cMuted);
+    Brain.Screen.printAt(100, 19, false, "// DOOM");
+    Brain.Screen.printAt(166, 19, false, "5977C");
     for (int i = 0; i < 7; ++i) {
         int y = kTabTop + i * kTabH;
         bool selected = (i == 6);
         if (selected) {
-            Brain.Screen.setPenColor(color(6, 8, 14));
-            Brain.Screen.drawRectangle(0, y, kSideW, kTabH - 2, color(6, 8, 14));
-            Brain.Screen.setPenColor(color(0, 210, 255));
+            Brain.Screen.setPenColor(cBg);
+            Brain.Screen.drawRectangle(0, y, kSideW, kTabH - 2, cBg);
+            Brain.Screen.setPenColor(cAccent);
         } else {
-            Brain.Screen.setPenColor(color(96, 112, 136));
+            Brain.Screen.setPenColor(cMuted);
         }
-        Brain.Screen.printAt(8, y + 19, true, "0%d %s", i + 1, tabNames[i]);
+        Brain.Screen.printAt(5, y + 18, false, "0%d", i + 1);
+        Brain.Screen.printAt(22, y + 18, false, "%s", tabNames[i]);
     }
-    Brain.Screen.setPenColor(color(32, 42, 60));
+    Brain.Screen.setPenColor(cGold);
+    Brain.Screen.printAt(13, 232, false, "5977C");
+    Brain.Screen.drawLine(15, 235, 51, 235);
+    Brain.Screen.setPenColor(cLine);
     Brain.Screen.drawLine(kSideW, 27, kSideW, 240);
     Brain.Screen.render();
 }
 
 extern "C" void vexDoomReadInput(int32_t* axes, int32_t* buttons) {
-    axes[0] = Controller1.Axis4.position(pct) * 127 / 100;
-    axes[1] = Controller1.Axis3.position(pct) * 127 / 100;
-    axes[2] = Controller1.Axis1.position(pct) * 127 / 100;
-    axes[3] = Controller1.Axis2.position(pct) * 127 / 100;
+    const auto doomAxis = [](int value) -> int32_t {
+        const int deadzone = 12;
+        if (value > -deadzone && value < deadzone) return 0;
+        int magnitude = (abs(value) - deadzone) * 127 / (100 - deadzone);
+        if (magnitude > 127) magnitude = 127;
+        return value < 0 ? -magnitude : magnitude;
+    };
+
+    axes[0] = doomAxis(Controller1.Axis4.position(pct));
+    axes[1] = doomAxis(Controller1.Axis3.position(pct));
+    axes[2] = doomAxis(Controller1.Axis1.position(pct));
+    axes[3] = doomAxis(Controller1.Axis2.position(pct));
     buttons[0] = Controller1.ButtonL1.pressing();
     buttons[1] = Controller1.ButtonL2.pressing();
     buttons[2] = Controller1.ButtonR1.pressing();
@@ -1399,8 +1433,8 @@ void stickBox(int x, int y, int s, int vx, int vy, bool showDz, const int* tx, c
     /* -------------------------------- telemetry ------------------------------- */
 
     static inline void readTel(Tel& t) {
-    t.rawFwd = Controller1.Axis3.position(pct);
-    t.rawTurn = Controller1.Axis1.position(pct);
+    t.rawFwd = Controller1.Axis1.position(pct);
+    t.rawTurn = Controller1.Axis3.position(pct);
     t.rawLx = Controller1.Axis4.position(pct);
     t.rawRy = Controller1.Axis2.position(pct);
     
@@ -1410,8 +1444,8 @@ void stickBox(int x, int y, int s, int vx, int vy, bool showDz, const int* tx, c
     
     bool driver = Competition.isDriverControl();
     DriveOutput o = mixDrive(t.fw, t.tr);
-    t.left = driver ? o.left : 0;
-    t.right = driver ? o.right : 0;
+    t.left = driver ? -o.left : 0;
+    t.right = driver ? -o.right : 0;
     t.throttle = (abs(t.left) + abs(t.right)) / 2;
     
     t.bat = clampInt(Brain.Battery.capacity(pct), 0, 100);
@@ -1495,17 +1529,15 @@ static inline void drawChrome(const Tel& t) {
     // Premium title with layered shadow for depth
     Brain.Screen.setFont(prop20);
     Brain.Screen.setPenColor(color(0, 0, 0));
-    Brain.Screen.printAt(10, 22, true, "VEXTOP");
+    Brain.Screen.printAt(10, 22, false, "VEXTOP");
     Brain.Screen.setPenColor(cAccent2);
-    Brain.Screen.printAt(9, 21, true, "VEXTOP");
+    Brain.Screen.printAt(9, 21, false, "VEXTOP");
     Brain.Screen.setPenColor(cText);
-    Brain.Screen.printAt(8, 20, true, "VEXTOP");
+    Brain.Screen.printAt(8, 20, false, "VEXTOP");
     Brain.Screen.setFont(mono12);
     
-    // Team branding in header with premium styling
-    Brain.Screen.setFont(mono12);
-    gTextC(240, 19, 7, cMuted, "TEAM 5977C  //  THE WARRIORS");
-    Brain.Screen.setFont(mono12);
+    // Compact team mark fits between the tab name and mode chip.
+    gText(166, 19, cMuted, "5977C");
     
     // Premium status indicator with smooth pulse
     float pulsePhase = (uiFrame % 120) / 120.0f * 6.28318f;
@@ -1592,15 +1624,13 @@ static inline void drawChrome(const Tel& t) {
             }
         }
         Brain.Screen.setFont(mono12);
-        gText(10, y + 14, sel ? cAccent : cLine, "0%d", i + 1);
-        Brain.Screen.setFont(mono15);
-        gTextC(kSideW / 2 + 2, y + 21, 9, sel ? cAccent : cMuted, "%s", tabNames[i]);
+        gText(5, y + 18, sel ? cAccent : cLine, "0%d", i + 1);
+        gText(22, y + 18, sel ? cAccent : cMuted, "%s", tabNames[i]);
     }
-    // Team branding at bottom of sidebar with premium styling
+    // Team mark sits in the space reserved below the navigation rows.
     Brain.Screen.setFont(mono12);
-    gTextC(kSideW / 2, 230, 7, cGold, "THE WARRIORS");
-    // Subtle underline
-    gLine(kSideW / 2 - 35, 232, kSideW / 2 + 35, 232, cGold);
+    gTextC(kSideW / 2, 232, 7, cGold, "5977C");
+    gLine(kSideW / 2 - 18, 235, kSideW / 2 + 18, 235, cGold);
     Brain.Screen.setFont(mono12);
 }
 
@@ -2338,6 +2368,24 @@ static inline void pageDebug(const Tel& t) {
                                     }
                                     Tel t;
                                     readTel(t);
+                                    static int batteryAlertLevel = 0;
+                                    int currentBatteryAlert = t.bat <= 10 ? 2 : t.bat <= 20 ? 1 : 0;
+                                    if (currentBatteryAlert > batteryAlertLevel) {
+                                        addNotification(currentBatteryAlert == 2 ? "CRITICAL BATTERY: 10% OR LESS" : "LOW BATTERY: 20% OR LESS",
+                                                        cDanger, 5000);
+                                    } else if (currentBatteryAlert == 0 && batteryAlertLevel > 0) {
+                                        addNotification("BATTERY LEVEL RECOVERED", cGood, 3500);
+                                    }
+                                    batteryAlertLevel = currentBatteryAlert;
+
+                                    static bool batteryTempAlert = false;
+                                    if (t.btemp >= 50 && !batteryTempAlert) {
+                                        addNotification("BATTERY TEMPERATURE HIGH", cDanger, 5000);
+                                        batteryTempAlert = true;
+                                    } else if (t.btemp <= 45 && batteryTempAlert) {
+                                        addNotification("BATTERY TEMPERATURE NORMAL", cGood, 3500);
+                                        batteryTempAlert = false;
+                                    }
                                     ++uiFrame;
                                     if (uiFrame % 3 == 0) pushHistory(t);
                                     if (uiFrame % 2 == 0) {
@@ -2401,27 +2449,23 @@ static inline void pageDebug(const Tel& t) {
 
                                     if (selectedTab == 6 && doomStartRequested) {
                                         doomStartRequested = false;
-                                        if (Competition.isEnabled()) {
-                                            doomStartBlocked = true;
+                                        FILE* wad = fopen("doom1.wad", "rb");
+                                        if (wad) {
+                                            fclose(wad);
+                                            doomWadMissing = false;
+                                            doomStarted = true;
+                                            LeftDrive.stop();
+                                            RightDrive.stop();
+                                            int result = I_RunVexDoom(D_DoomMain);
+                                            if (result != 0) handleDoomExit(result);
                                         } else {
-                                            FILE* wad = fopen("/usd/doom1.wad", "rb");
-                                            if (wad) {
-                                                fclose(wad);
-                                                doomStartBlocked = false;
-                                                doomWadMissing = false;
-                                                doomStarted = true;
-                                                LeftDrive.stop();
-                                                RightDrive.stop();
-                                                D_DoomMain();
-                                            } else {
-                                                doomStartBlocked = false;
-                                                doomWadMissing = true;
-                                            }
+                                            doomWadMissing = true;
                                         }
                                     }
 
                                     if (selectedTab == 6 && doomStarted) {
-                                        D_DoomFrame();
+                                        int result = I_RunVexDoom(D_DoomFrame);
+                                        if (result != 0) handleDoomExit(result);
                                         return;
                                     }
     
@@ -2467,6 +2511,7 @@ static inline void pageDebug(const Tel& t) {
 
                                                                         // Draw advanced effects on top
                                                                         drawAdvancedEffects();
+                                                                        drawNotifications();
 
                                                                         // page transition: wipe reveal left -> right
                                                                         if (transFrames > 0) {
@@ -2480,18 +2525,26 @@ static inline void pageDebug(const Tel& t) {
                                                                         // Warn if UI frame took >20ms (could starve drive at 50Hz)
                                                                         if (Brain.Timer.time(msec) - renderStart > 20) {
                                                                             Brain.Screen.setPenColor(cDanger);
-                                                                            Brain.Screen.printAt(10, 230, true, "UI LAG %dms", Brain.Timer.time(msec) - renderStart);
+                                                                            Brain.Screen.printAt(10, 230, false, "UI LAG %dms", Brain.Timer.time(msec) - renderStart);
                                                                         }
                                                                     }
                                     /* ---------------------------------- DOOM page --------------------------------- */
 
                                     static inline void pageDoom(const Tel& t) {
                                         (void)t;
-                                        gCard(76, 32, 398, 200, "DOOM // INTEGRATED ENGINE");
-                                        Brain.Screen.setFont(prop60);
-                                        gTextC(275, 76, 30, cAccent, "DOOM");
+                                        gCard(76, 32, 398, 200, "DOOM // V5 PORT");
+                                        if (doomUnavailable) {
+                                            Brain.Screen.setFont(prop30);
+                                            gTextC(275, 92, 17, cDanger, "DOOM STOPPED");
+                                            Brain.Screen.setFont(mono12);
+                                            gTextC(275, 126, 7, cText, "%.48s", doomExitMessage);
+                                            gTextC(275, 154, 7, cMuted, "RESTART THE PROGRAM TO PLAY AGAIN");
+                                            return;
+                                        }
+                                        Brain.Screen.setFont(prop30);
+                                        gTextC(275, 94, 17, cAccent, "DOOM");
                                         Brain.Screen.setFont(mono12);
-                                        gTextC(275, 105, 10, doomStarted ? cGood : cWarn,
+                                        gTextC(275, 114, 8, doomStarted ? cGood : cWarn,
                                                doomStarted ? "GAME READY" : "V5 ENGINE PORT");
                                         gLine(92, 124, 458, 124, cLine);
                                         if (doomStarted) {
@@ -2499,14 +2552,14 @@ static inline void pageDebug(const Tel& t) {
                                             gTextC(275, 175, 8, cMuted, "Touch DOOM again to resume.");
                                         } else {
                                             gTextC(275, 145, 8, cMuted, "Use the controller to play.");
-                                            gRect(185, 165, 180, 42, doomStartBlocked ? cWarn : cGood);
-                                            gBox(185, 165, 180, 42, cText);
-                                            gTextC(275, 192, 8, cBg, "START DOOM");
-                                            gTextC(275, 218, 7, doomStartBlocked ? cWarn : cMuted,
-                                                   doomStartBlocked ? "DISABLE ROBOT TO START" : "ROBOT MUST BE DISABLED");
+                                            bool startBlocked = !Brain.SDcard.isInserted();
+                                            gRect(185, 165, 180, 42, startBlocked ? cLine : cGood);
+                                            gBox(185, 165, 180, 42, startBlocked ? cMuted : cText);
+                                            gTextC(275, 192, 8, startBlocked ? cText : cBg, "START DOOM");
+                                            gTextC(275, 218, 7, cMuted, "DRIVE MOTORS PAUSE IN DOOM");
                                             gTextC(275, 230, 7, doomWadMissing ? cDanger : cMuted,
-                                                   doomWadMissing ? "MISSING: /usd/doom1.wad" :
-                                                   Brain.SDcard.isInserted() ? "WAD: /usd/doom1.wad" : "INSERT MICROSD WITH WAD");
+                                                   doomWadMissing ? "CANNOT OPEN: doom1.wad" :
+                                                   Brain.SDcard.isInserted() ? "SD ROOT: doom1.wad" : "INSERT MICROSD WITH WAD");
                                         }
                                     }
 
@@ -2521,7 +2574,7 @@ static inline void pageDebug(const Tel& t) {
                                             if (tx < kSideW && ty >= kTabTop) {
                                                 int idx = (ty - kTabTop) / kTabH;
                                                 if (idx >= 0 && idx < 7) selectedTab = idx;  // Support all 7 tabs
-                                                } else if (selectedTab == 6 && !doomStarted &&
+                                                } else if (selectedTab == 6 && !doomStarted && !doomUnavailable &&
                                                            tx >= 185 && tx <= 365 && ty >= 165 && ty <= 207) {
                                                     doomStartRequested = true;
                                                 } else if (selectedTab == 3 && ty >= 188 && ty <= 226) {
@@ -3272,9 +3325,9 @@ void updateAdvancedEffects(int dt) {
 
 // Draw all advanced effects
 void drawAdvancedEffects() {
-    if (vignetteStrength > 0) drawVignette();
-    if (scanlineIntensity > 0) drawScanlines(scanlineIntensity);
-    if (crtCurvature > 0) drawCRTCurvature();
+    // The Brain screen API draws directly into the visible buffer, so these
+    // faux post-process overlays erase the UI instead of blending with it.
+    // Keep decorative effects that draw only their own pixels.
     if (hologramMode) drawHologramScanlines();
     drawParticleTrails();
     drawRibbons();
@@ -3498,14 +3551,24 @@ void drawNotifications() {
 }
 
 void addNotification(const char* text, color c, int durationMs) {
-    if (notificationCount >= 8) return;
-    Notification& n = notifications[notificationCount++];
+    int slot = -1;
+    for (int i = 0; i < notificationCount; ++i) {
+        if (!notifications[i].active) {
+            slot = i;
+            break;
+        }
+    }
+    if (slot < 0) {
+        if (notificationCount >= 8) return;
+        slot = notificationCount++;
+    }
+    Notification& n = notifications[slot];
     strncpy(n.text, text, 63);
     n.text[63] = 0;
     n.c = c;
     n.life = durationMs;
     n.maxLife = durationMs;
-    n.y = 30 + (notificationCount - 1) * 35;
+    n.y = 30 + slot * 35;
     n.targetY = n.y;
     n.active = true;
 }

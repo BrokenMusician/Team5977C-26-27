@@ -54,6 +54,13 @@ void I_Quit (void);
 
 void I_Error (char *error, ...);
 
+#ifdef VEXCODE
+// Run a Doom entry point with a VEX-safe exit path: 0=normal return,
+// 1=fatal error, 2=player quit.
+int I_RunVexDoom(void (*entry)(void));
+const char *I_GetVexDoomError(void);
+#endif
+
 void I_Tactile (int on, int off, int total);
 
 boolean I_GetMemoryValue(unsigned int offset, void *value, int size);

@@ -2042,7 +2042,13 @@ float M_GetFloatVariable(char *name)
 
 static char *GetDefaultConfigDir(void)
 {
+#ifdef VEXCODE
+    // VEXcode exposes the SD card root directly; it has no /usd mount path
+    // or per-project config directory.
+    return strdup("");
+#else
     return strdup(FILES_DIR"/");
+#endif
 }
 
 // 

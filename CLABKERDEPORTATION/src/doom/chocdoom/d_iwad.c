@@ -644,7 +644,13 @@ char *D_FindIWAD(int mask, GameMission_t *mission)
 
     return result;
     */
+#ifdef VEXCODE
+    // VEXcode's SD filesystem exposes files from the card root by filename;
+    // /usd is the PROS mount path and is not used by this project.
+    return "doom1.wad";
+#else
     return "/usd/doom1.wad";
+#endif
 }
 
 // Find all IWADs in the IWAD search path matching the given mask.

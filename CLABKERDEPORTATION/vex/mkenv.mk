@@ -29,7 +29,7 @@ endif
 # SDK path passed from app
 # if not set then environmental variabled used
 ifeq ("$(origin T)", "command line")
-VEX_SDK_PATH = $(T)
+VEX_SDK_PATH = $(T)/vexv5
 endif
 # backup if still not set
 VEX_SDK_PATH ?= C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5
@@ -103,7 +103,9 @@ CFLAGS    = ${CFLAGS_CL} ${CFLAGS_V7} -Os -Wall -Werror=return-type -ansi -std=g
 CXX_FLAGS = ${CFLAGS_CL} ${CFLAGS_V7} -Os -Wall -Werror=return-type -fno-rtti -fno-threadsafe-statics -fno-exceptions  -std=gnu++11 -ffunction-sections -fdata-sections $(DEFINES)
 
 # linker flags
-LNK_FLAGS = -nostdlib -T "$(VEX_SDK_PATH)/lscript.ld" -R "$(VEX_SDK_PATH)/stdlib_0.lib" -Map="$(BUILD)/$(PROJECT).map" --gc-section -L"$(VEX_SDK_PATH)" ${TOOL_LIB}
+# Doom needs a multi-megabyte zone allocator; VEX's linker script defaults
+# the C heap to 1 MiB, which is too small for the game.
+LNK_FLAGS = --defsym=_HEAP_SIZE=0x00C00000 -nostdlib -T "$(VEX_SDK_PATH)/lscript.ld" -R "$(VEX_SDK_PATH)/stdlib_0.lib" -Map="$(BUILD)/$(PROJECT).map" --gc-section -L"$(VEX_SDK_PATH)" ${TOOL_LIB}
 
 # future statuc library
 PROJECTLIB = lib$(PROJECT)

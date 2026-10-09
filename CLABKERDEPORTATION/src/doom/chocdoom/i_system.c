@@ -22,6 +22,9 @@
 #include <string.h>
 
 #include <stdarg.h>
+#ifdef VEXCODE
+#include <setjmp.h>
+#endif
 
 #include <unistd.h>
 
@@ -54,6 +57,37 @@ struct atexit_listentry_s
 };
 
 static atexit_listentry_t *exit_funcs = NULL;
+
+#ifdef VEXCODE
+static jmp_buf vex_doom_exit;
+static boolean vex_doom_entry_active = false;
+static char vex_doom_error[512];
+
+int I_RunVexDoom(void (*entry)(void))
+{
+    int result;
+
+    vex_doom_error[0] = '\0';
+    result = setjmp(vex_doom_exit);
+    if (result == 0)
+    {
+        vex_doom_entry_active = true;
+        entry();
+        vex_doom_entry_active = false;
+    }
+    else
+    {
+        vex_doom_entry_active = false;
+    }
+
+    return result;
+}
+
+const char *I_GetVexDoomError(void)
+{
+    return vex_doom_error;
+}
+#endif
 
 void I_AtExit(atexit_func_t func, boolean run_on_error)
 {
@@ -222,6 +256,13 @@ void I_BindVariables(void)
 
 void I_Quit (void)
 {
+#ifdef VEXCODE
+    if (vex_doom_entry_active)
+    {
+        longjmp(vex_doom_exit, 2);
+    }
+#endif
+
     atexit_listentry_t *entry;
 
     // Run through all exit functions
@@ -312,6 +353,15 @@ void I_Error (char *error, ...)
     memset(msgbuf, 0, sizeof(msgbuf));
     M_vsnprintf(msgbuf, sizeof(msgbuf), error, argptr);
     va_end(argptr);
+
+#ifdef VEXCODE
+    if (vex_doom_entry_active)
+    {
+        strncpy(vex_doom_error, msgbuf, sizeof(vex_doom_error) - 1);
+        vex_doom_error[sizeof(vex_doom_error) - 1] = '\0';
+        longjmp(vex_doom_exit, 1);
+    }
+#endif
 
     // Shutdown. Here might be other errors.
 

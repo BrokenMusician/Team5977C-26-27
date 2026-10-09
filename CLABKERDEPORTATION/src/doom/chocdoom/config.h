@@ -98,4 +98,8 @@
 
 /* Define to the directory where all game files are located */
 //#define FILES_DIR "0:/doom"
+#ifdef VEXCODE
+#define FILES_DIR ""
+#else
 #define FILES_DIR "/usd"
+#endif
