@@ -2348,119 +2348,119 @@ static inline void pageDebug(const Tel& t) {
                                                     case 3: pageInput(t); break;
                                                     case 4: pageSystem(t); break;
                                                     case 5: pageDebug(t); break;
-                                                                                        case 6: pageDoom(t); break;
-                                                                                        default: pageSystem(t); break;
-                                                                                    }
+                                                                                                        case 6: pageDoom(t); break;
+                                                                                                        default: pageSystem(t); break;
+                                                                                                    }
 
-                            // Draw ambient particles on top
-                            drawParticles();
-    
-                            // Draw advanced effects on top
-                            drawAdvancedEffects();
+                                                                                // Draw ambient particles on top
+                                                                                drawParticles();
 
-                            // page transition: wipe reveal left -> right
-                            if (transFrames > 0) {
-                                int rx = kSideW + 1 + (8 - transFrames) * 52;
-                                gRect(rx, 27, 480 - rx, 213, cBg);
-                                gRect(rx, 27, 2, 213, cAccent);
-                                --transFrames;
-                                }
-                                Brain.Screen.render();
+                                                                                // Draw advanced effects on top
+                                                                                drawAdvancedEffects();
 
-                                // Warn if UI frame took >20ms (could starve drive at 50Hz)
-                                if (Brain.Timer.time(msec) - renderStart > 20) {
-                                    Brain.Screen.setPenColor(cDanger);
-                                    Brain.Screen.printAt(10, 230, true, "UI LAG %dms", Brain.Timer.time(msec) - renderStart);
-                                }
-                            }
+                                                                                // page transition: wipe reveal left -> right
+                                                                                if (transFrames > 0) {
+                                                                                    int rx = kSideW + 1 + (8 - transFrames) * 52;
+                                                                                    gRect(rx, 27, 480 - rx, 213, cBg);
+                                                                                    gRect(rx, 27, 2, 213, cAccent);
+                                                                                    --transFrames;
+                                                                                }
+                                                                                Brain.Screen.render();
 
-                            /* ---------------------------------- DOOM page --------------------------------- */
+                                                                                // Warn if UI frame took >20ms (could starve drive at 50Hz)
+                                                                                if (Brain.Timer.time(msec) - renderStart > 20) {
+                                                                                    Brain.Screen.setPenColor(cDanger);
+                                                                                    Brain.Screen.printAt(10, 230, true, "UI LAG %dms", Brain.Timer.time(msec) - renderStart);
+                                                                                }
+                                                                            }
 
-                            static inline void pageDoom(const Tel& t) {
-        gCard(76, 32, 398, 200, "DOOM // VEX V5 PORT");
+                                                    /* ---------------------------------- DOOM page --------------------------------- */
 
-        // DOOM status display
-        Brain.Screen.setFont(prop20);
-        gTextC(275, 60, 12, cAccent, "DOOM");
-        Brain.Screen.setFont(mono12);
+                                                    static inline void pageDoom(const Tel& t) {
+                                                        gCard(76, 32, 398, 200, "DOOM // VEX V5 PORT");
 
-        // Instructions
-        gText(90, 90, cMuted, "CONTROLS:");
-        gText(90, 110, cText, "L-Stick Y: Move Forward/Back");
-        gText(90, 125, cText, "R-Stick X: Turn Left/Right");
-        gText(90, 140, cText, "L-Stick X: Strafe Left/Right");
-        gText(90, 155, cText, "R1: Fire");
-        gText(90, 170, cText, "B: Use/Open");
-        gText(90, 185, cText, "X: Enter");
-        gText(90, 200, cText, "Y: Escape/Menu");
-        gText(90, 215, cText, "D-Pad: Arrow Keys");
-        gText(90, 230, cText, "L2/R2: Prev/Next Weapon");
+                                                        // DOOM status display
+                                                        Brain.Screen.setFont(prop20);
+                                                        gTextC(275, 60, 12, cAccent, "DOOM");
+                                                        Brain.Screen.setFont(mono12);
 
-        // Status
-        gText(300, 90, cMuted, "STATUS:");
-        gText(300, 110, cGood, "WAD: doom1.wad (SD Card)");
-        gText(300, 125, cGood, "Engine: Chocolate Doom");
-        gText(300, 140, cWarn, "Sound: Not Supported");
-        gText(300, 155, cWarn, "Multiplayer: Not Supported");
-        gText(300, 170, cMuted, "Resolution: 320x200");
-        gText(300, 185, cMuted, "FPS: ~30 (V5 Brain)");
+                                                        // Instructions
+                                                        gText(90, 90, cMuted, "CONTROLS:");
+                                                        gText(90, 110, cText, "L-Stick Y: Move Forward/Back");
+                                                        gText(90, 125, cText, "R-Stick X: Turn Left/Right");
+                                                        gText(90, 140, cText, "L-Stick X: Strafe Left/Right");
+                                                        gText(90, 155, cText, "R1: Fire");
+                                                        gText(90, 170, cText, "B: Use/Open");
+                                                        gText(90, 185, cText, "X: Enter");
+                                                        gText(90, 200, cText, "Y: Escape/Menu");
+                                                        gText(90, 215, cText, "D-Pad: Arrow Keys");
+                                                        gText(90, 230, cText, "L2/R2: Prev/Next Weapon");
 
-        // Launch button
-        static bool doomLaunched = false;
-        int btnX = 300, btnY = 200, btnW = 150, btnH = 40;
-        bool btnHover = Brain.Screen.pressing() &&
-            Brain.Screen.xPosition() >= btnX && Brain.Screen.xPosition() <= btnX + btnW &&
-            Brain.Screen.yPosition() >= btnY && Brain.Screen.yPosition() <= btnY + btnH;
+                                                        // Status
+                                                        gText(300, 90, cMuted, "STATUS:");
+                                                        gText(300, 110, cGood, "WAD: doom1.wad (SD Card)");
+                                                        gText(300, 125, cGood, "Engine: Chocolate Doom");
+                                                        gText(300, 140, cWarn, "Sound: Not Supported");
+                                                        gText(300, 155, cWarn, "Multiplayer: Not Supported");
+                                                        gText(300, 170, cMuted, "Resolution: 320x200");
+                                                        gText(300, 185, cMuted, "FPS: ~30 (V5 Brain)");
 
-        color btnBg = doomLaunched ? cDanger : btnHover ? cAccent : cGood;
-        color btnText = cBg;
+                                                        // Launch button
+                                                        static bool doomLaunched = false;
+                                                        int btnX = 300, btnY = 200, btnW = 150, btnH = 40;
+                                                        bool btnHover = Brain.Screen.pressing() &&
+                                                            Brain.Screen.xPosition() >= btnX && Brain.Screen.xPosition() <= btnX + btnW &&
+                                                            Brain.Screen.yPosition() >= btnY && Brain.Screen.yPosition() <= btnY + btnH;
 
-        gRect(btnX, btnY, btnW, btnH, btnBg);
-        gBox(btnX, btnY, btnW, btnH, cText);
-        Brain.Screen.setFont(prop20);
-        gTextC(btnX + btnW/2, btnY + 28, 11, btnText, doomLaunched ? "RUNNING..." : "LAUNCH DOOM");
-        Brain.Screen.setFont(mono12);
+                                                        color btnBg = doomLaunched ? cDanger : btnHover ? cAccent : cGood;
+                                                        color btnText = cBg;
 
-        // Handle launch button press
-        if (Brain.Screen.pressing() && btnHover && !doomLaunched) {
-            doomLaunched = true;
-            // Note: Actual DOOM launch would require PROS kernel integration
-            // This is a placeholder for the UI
-        }
+                                                        gRect(btnX, btnY, btnW, btnH, btnBg);
+                                                        gBox(btnX, btnY, btnW, btnH, cText);
+                                                        Brain.Screen.setFont(prop20);
+                                                        gTextC(btnX + btnW/2, btnY + 28, 11, btnText, doomLaunched ? "RUNNING..." : "LAUNCH DOOM");
+                                                        Brain.Screen.setFont(mono12);
 
-        // Animated DOOM logo
-        static int logoFrame = 0;
-        logoFrame++;
-        float pulse = sinf(logoFrame * 0.1f) * 0.5f + 0.5f;
-        color logoColor = mix8(cAccentRgb, cAccent2Rgb, (int)(pulse * 256));
-        Brain.Screen.setFont(prop60);
-        gTextC(275, 60, 30, logoColor, "DOOM");
-        Brain.Screen.setFont(mono12);
+                                                        // Handle launch button press
+                                                        if (Brain.Screen.pressing() && btnHover && !doomLaunched) {
+                                                            doomLaunched = true;
+                                                            // Note: Actual DOOM launch would require PROS kernel integration
+                                                            // This is a placeholder for the UI
+                                                        }
 
-        // Particle effects for atmosphere
-        if (uiFrame % 20 == 0) {
-            spawnParticles(275 + rand() % 100 - 50, 60 + rand() % 20 - 10, 1, cAccent2, 0.5f, 1.5f, 1, 2, 800);
-        }
-                            }
+                                                        // Animated DOOM logo
+                                                        static int logoFrame = 0;
+                                                        logoFrame++;
+                                                        float pulse = sinf(logoFrame * 0.1f) * 0.5f + 0.5f;
+                                                        color logoColor = mix8(cAccentRgb, cAccent2Rgb, (int)(pulse * 256));
+                                                        Brain.Screen.setFont(prop60);
+                                                        gTextC(275, 60, 30, logoColor, "DOOM");
+                                                        Brain.Screen.setFont(mono12);
 
-                            /* ---------------------------------- touch --------------------------------- */
+                                                        // Particle effects for atmosphere
+                                                                if (uiFrame % 20 == 0) {
+                                                                    spawnParticles(275 + rand() % 100 - 50, 60 + rand() % 20 - 10, 1, cAccent2, 0.5f, 1.5f, 1, 2, 800);
+                                                                }
+                                                            }
 
-                            void handleScreenTouch() {
-    static bool wasTouching = false;
-    bool touching = Brain.Screen.pressing();
-    if (touching && !wasTouching) {
-        int tx = Brain.Screen.xPosition();
-        int ty = Brain.Screen.yPosition();
-        if (tx < kSideW && ty >= kTabTop) {
-            int idx = (ty - kTabTop) / kTabH;
-                    if (idx >= 0 && idx < 7) selectedTab = idx;  // Support all 7 tabs
-        } else if (selectedTab == 3 && ty >= 188 && ty <= 226) {
-            if (tx >= 320 && tx <= 356 && driveDeadbandPct > 0) --driveDeadbandPct;
-                        else if (tx >= 430 && tx <= 466 && driveDeadbandPct < 25) ++driveDeadbandPct;
-                    }
-                }
-                wasTouching = touching;
-            }
+                                                        /* ---------------------------------- touch --------------------------------- */
+
+                                                        void handleScreenTouch() {
+                                                            static bool wasTouching = false;
+                                                            bool touching = Brain.Screen.pressing();
+                                                            if (touching && !wasTouching) {
+                                                                int tx = Brain.Screen.xPosition();
+                                                                int ty = Brain.Screen.yPosition();
+                                                                if (tx < kSideW && ty >= kTabTop) {
+                                                                    int idx = (ty - kTabTop) / kTabH;
+                                                                    if (idx >= 0 && idx < 7) selectedTab = idx;  // Support all 7 tabs
+                                                                } else if (selectedTab == 3 && ty >= 188 && ty <= 226) {
+                                                                    if (tx >= 320 && tx <= 356 && driveDeadbandPct > 0) --driveDeadbandPct;
+                                                                    else if (tx >= 430 && tx <= 466 && driveDeadbandPct < 25) ++driveDeadbandPct;
+                                                                }
+                                                            }
+                                                            wasTouching = touching;
+                                                        }
 
 /* ------------------------------- boot sequence ----------------------------- */
 
