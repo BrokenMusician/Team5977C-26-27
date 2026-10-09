@@ -14,6 +14,15 @@
 
 using namespace vex;
 
+extern "C" {
+void D_DoomMain(void);
+void D_DoomFrame(void);
+void vexDoomPresent(const uint8_t* pixels, const uint32_t* palette, int width, int height);
+void vexDoomReadInput(int32_t* axes, int32_t* buttons);
+uint32_t vexDoomMillis(void);
+void vexDoomSleep(int milliseconds);
+}
+
 vex::brain Brain;
 
 motor LeftMotor1 = motor(PORT1, ratio18_1, false);
@@ -32,6 +41,9 @@ int driveDeadbandPct = 5;
 constexpr int kMaxMotorPct = 100;
 int selectedTab = 0;
 int uiFrame = 0;
+bool doomStarted = false;
+bool doomStartRequested = false;
+bool doomStartBlocked = false;
 
 // Ultra-smooth adaptive render: 33ms (30Hz) driving, 66ms (15Hz) idle, 16ms (60Hz) transitions
 constexpr int kRenderIntervalMs = 33;
@@ -1179,6 +1191,71 @@ void gRect(int x, int y, int w, int h, color c) {
     Brain.Screen.drawRectangle(x, y, w, h, c);
 }
 
+/* Doom's indexed framebuffer is converted to a VEX RGB buffer here. */
+extern "C" void vexDoomPresent(const uint8_t* pixels, const uint32_t* palette,
+                               int width, int height) {
+    static uint32_t frame[414 * 212];
+    for (int y = 0; y < 212; ++y) {
+        int sy = y * height / 212;
+        for (int x = 0; x < 414; ++x) {
+            int sx = x * width / 414;
+            frame[y * 414 + x] = palette[pixels[sy * width + sx]];
+        }
+    }
+
+    Brain.Screen.setFillColor(color(6, 8, 14));
+    Brain.Screen.clearScreen();
+    Brain.Screen.drawImageFromBuffer(frame, kSideW, kTabTop, 414, 212);
+    Brain.Screen.setPenColor(color(12, 16, 26));
+    Brain.Screen.drawRectangle(0, 0, 480, 27, color(12, 16, 26));
+    Brain.Screen.drawRectangle(0, kTabTop, kSideW, 212, color(12, 16, 26));
+    Brain.Screen.setFont(mono12);
+    Brain.Screen.setPenColor(color(0, 210, 255));
+    Brain.Screen.printAt(10, 19, true, "VEXTOP // DOOM");
+    for (int i = 0; i < 7; ++i) {
+        int y = kTabTop + i * kTabH;
+        bool selected = (i == 6);
+        if (selected) {
+            Brain.Screen.setPenColor(color(6, 8, 14));
+            Brain.Screen.drawRectangle(0, y, kSideW, kTabH - 2, color(6, 8, 14));
+            Brain.Screen.setPenColor(color(0, 210, 255));
+        } else {
+            Brain.Screen.setPenColor(color(96, 112, 136));
+        }
+        Brain.Screen.printAt(8, y + 19, true, "0%d %s", i + 1, tabNames[i]);
+    }
+    Brain.Screen.setPenColor(color(32, 42, 60));
+    Brain.Screen.drawLine(kSideW, 27, kSideW, 240);
+    Brain.Screen.render();
+}
+
+extern "C" void vexDoomReadInput(int32_t* axes, int32_t* buttons) {
+    axes[0] = Controller1.Axis4.position(pct) * 127 / 100;
+    axes[1] = Controller1.Axis3.position(pct) * 127 / 100;
+    axes[2] = Controller1.Axis1.position(pct) * 127 / 100;
+    axes[3] = Controller1.Axis2.position(pct) * 127 / 100;
+    buttons[0] = Controller1.ButtonL1.pressing();
+    buttons[1] = Controller1.ButtonL2.pressing();
+    buttons[2] = Controller1.ButtonR1.pressing();
+    buttons[3] = Controller1.ButtonR2.pressing();
+    buttons[4] = Controller1.ButtonUp.pressing();
+    buttons[5] = Controller1.ButtonDown.pressing();
+    buttons[6] = Controller1.ButtonLeft.pressing();
+    buttons[7] = Controller1.ButtonRight.pressing();
+    buttons[8] = Controller1.ButtonX.pressing();
+    buttons[9] = Controller1.ButtonB.pressing();
+    buttons[10] = Controller1.ButtonY.pressing();
+    buttons[11] = Controller1.ButtonA.pressing();
+}
+
+extern "C" uint32_t vexDoomMillis(void) {
+    return static_cast<uint32_t>(Brain.Timer.time(msec));
+}
+
+extern "C" void vexDoomSleep(int milliseconds) {
+    if (milliseconds > 0) this_thread::sleep_for(static_cast<uint32_t>(milliseconds));
+}
+
 void gBox(int x, int y, int w, int h, color c) {
     Brain.Screen.setPenColor(c);
     Brain.Screen.drawLine(x, y, x + w, y);
@@ -2303,6 +2380,8 @@ static inline void pageDebug(const Tel& t) {
                                     if (transitionFramesLeft > 0) {
                                         interval = kTransitionRenderIntervalMs; // 60Hz during transitions
                                         transitionFramesLeft--;
+                                    } else if (selectedTab == 6 && doomStarted) {
+                                        interval = kRenderIntervalMs;
                                     } else if (isDriving) {
                                         interval = kRenderIntervalMs; // 30Hz when driving
                                     } else {
@@ -2318,6 +2397,30 @@ static inline void pageDebug(const Tel& t) {
 
                                     // UI watchdog: skip frame if rendering takes too long (protects drive loop)
                                     uint32_t renderStart = Brain.Timer.time(msec);
+
+                                    if (selectedTab == 6 && doomStartRequested) {
+                                        doomStartRequested = false;
+                                        if (Competition.isEnabled()) {
+                                            doomStartBlocked = true;
+                                        } else {
+                                            FILE* wad = fopen("/usd/doom1.wad", "rb");
+                                            if (wad) {
+                                                fclose(wad);
+                                                doomStartBlocked = false;
+                                                doomStarted = true;
+                                                LeftDrive.stop();
+                                                RightDrive.stop();
+                                                D_DoomMain();
+                                            } else {
+                                                doomStartBlocked = false;
+                                            }
+                                        }
+                                    }
+
+                                    if (selectedTab == 6 && doomStarted) {
+                                        D_DoomFrame();
+                                        return;
+                                    }
     
                                     // Update ambient particles with delta time
                                     updateParticles((int)deltaTime);
@@ -2381,16 +2484,25 @@ static inline void pageDebug(const Tel& t) {
 
                                     static inline void pageDoom(const Tel& t) {
                                         (void)t;
-                                        gCard(76, 32, 398, 200, "DOOM // SEPARATE PROJECT");
+                                        gCard(76, 32, 398, 200, "DOOM // VEXTOP PORT");
                                         Brain.Screen.setFont(prop60);
                                         gTextC(275, 76, 30, cAccent, "DOOM");
                                         Brain.Screen.setFont(mono12);
-                                        gTextC(275, 105, 10, cGood, "PORT SOURCE INCLUDED");
+                                        gTextC(275, 105, 10, doomStarted ? cGood : cWarn,
+                                               doomStarted ? "GAME READY" : "V5 ENGINE PORT");
                                         gLine(92, 124, 458, 124, cLine);
-                                        gText(96, 148, cText, "V5 Doom port is in the separate VexV5Doom folder.");
-                                        gText(96, 168, cMuted, "Build and upload that project with the PROS CLI.");
-                                        gText(96, 188, cMuted, "Copy doom1.wad to a FAT32 microSD card first.");
-                                        gText(96, 216, cAccent, "Doom runs as its own program, not inside this UI.");
+                                        if (doomStarted) {
+                                            gTextC(275, 150, 8, cText, "TAP A TAB TO PAUSE AND RETURN");
+                                            gTextC(275, 175, 8, cMuted, "Touch DOOM again to resume.");
+                                        } else {
+                                            gTextC(275, 146, 8, cMuted, "Use the controller to play.");
+                                            gRect(185, 170, 180, 42, doomStartBlocked ? cWarn : cGood);
+                                            gBox(185, 170, 180, 42, cText);
+                                            gTextC(275, 197, 8, cBg, "START DOOM");
+                                            gTextC(275, 226, 7, cMuted,
+                                                   doomStartBlocked ? "DISABLE ROBOT TO START" :
+                                                   Brain.SDcard.isInserted() ? "WAD REQUIRED: /usd/doom1.wad" : "INSERT MICROSD WITH WAD");
+                                        }
                                     }
 
                                     /* ---------------------------------- touch --------------------------------- */
@@ -2404,7 +2516,10 @@ static inline void pageDebug(const Tel& t) {
                                             if (tx < kSideW && ty >= kTabTop) {
                                                 int idx = (ty - kTabTop) / kTabH;
                                                 if (idx >= 0 && idx < 7) selectedTab = idx;  // Support all 7 tabs
-                                                                } else if (selectedTab == 3 && ty >= 188 && ty <= 226) {
+                                                } else if (selectedTab == 6 && !doomStarted &&
+                                                           tx >= 185 && tx <= 365 && ty >= 170 && ty <= 212) {
+                                                    doomStartRequested = true;
+                                                } else if (selectedTab == 3 && ty >= 188 && ty <= 226) {
                                                                     if (tx >= 320 && tx <= 356 && driveDeadbandPct > 0) --driveDeadbandPct;
                                                                     else if (tx >= 430 && tx <= 466 && driveDeadbandPct < 25) ++driveDeadbandPct;
                                                                 }
@@ -4190,7 +4305,7 @@ int main() {
     bool outroVisible = false;
     while (1) {
         bool enabled = Competition.isEnabled();
-        if (Competition.isDriverControl()) {
+        if (Competition.isDriverControl() && !(selectedTab == 6 && doomStarted)) {
             driveArcadeSplit();
         } else {
             LeftDrive.stop();

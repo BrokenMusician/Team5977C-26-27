@@ -6,11 +6,15 @@ VERBOSE = 0
 # include toolchain options
 include vex/mkenv.mk
 
+# Build the port's engine sources against the VEXcode display/input shim.
+DEFINES += -DVEXCODE
+
 # location of the project source cpp and c files
 SRC_C  = $(wildcard src/*.cpp) 
 SRC_C += $(wildcard src/*.c)
 SRC_C += $(wildcard src/*/*.cpp) 
 SRC_C += $(wildcard src/*/*.c)
+SRC_C += $(wildcard src/doom/chocdoom/*.c)
 
 OBJ = $(addprefix $(BUILD)/, $(addsuffix .o, $(basename $(SRC_C))) )
 
