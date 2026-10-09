@@ -27,17 +27,6 @@
 			"group": "build",
 			"problemMatcher": [],
 			"detail": "Cleans the build directory"
-		},
-		{
-			"label": "VEX: Upload to Brain",
-			"type": "shell",
-			"command": "make",
-			"args": [
-				"upload"
-			],
-			"group": "test",
-			"problemMatcher": [],
-			"detail": "Uploads the built binary to the V5 Brain"
 		}
 	]
 }

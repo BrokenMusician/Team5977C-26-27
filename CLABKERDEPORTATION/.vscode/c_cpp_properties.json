@@ -22,9 +22,10 @@
 			"compilerPath": "${vex_compilerPath}",
 			"cStandard": "gnu99",
 			"cppStandard": "gnu++11",
-			"intelliSenseMode": "linux-clang-arm",
+			"intelliSenseMode": "windows-clang-arm",
 			"defines": [
 				"VexV5",
+				"VEXCODE",
 				"__ARM_ARCH_7A__",
 				"__thumb__",
 				"__ARM_NEON__",
