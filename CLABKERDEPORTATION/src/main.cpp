@@ -2439,9 +2439,9 @@ static inline void pageDebug(const Tel& t) {
         }
     }
 
-    /* ---------------------------------- touch --------------------------------- */
+        /* ---------------------------------- touch --------------------------------- */
 
-    void handleScreenTouch() {
+        void handleScreenTouch() {
     static bool wasTouching = false;
     bool touching = Brain.Screen.pressing();
     if (touching && !wasTouching) {
