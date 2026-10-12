@@ -2401,6 +2401,11 @@ static inline void pageDebug(const Tel& t) {
                         static inline void pageDoom(const Tel& t);
                                                 // Motor config page is defined below the UI loop.
                                                 static inline void pageMotorConfig(const Tel& t);
+                                                // Radial menu functions
+                                                void openRadialMenu();
+                                                void closeRadialMenu();
+                                                void drawRadialMenu();
+                                                void handleRadialMenuAction(int index);
 
                         // MAIN UI RENDER LOOP - Ultra-smooth 60fps target
                         // ============================================================================
@@ -2622,19 +2627,38 @@ static inline void pageDebug(const Tel& t) {
                                                                                 touchStartTime = Brain.Timer.time(msec);
                                                                                 int tx = Brain.Screen.xPosition();
                                                                                 int ty = Brain.Screen.yPosition();
-                                                                                if (tx < kSideW && ty >= kTabTop) {
-                                                                                    int idx = (ty - kTabTop) / kTabH;
-                                                                                    if (idx >= 0 && idx < 8) selectedTab = idx;  // Support all 8 tabs
-                                                                                    } else if (selectedTab == 6 && !doomStarted && !doomUnavailable &&
-                                                                                               tx >= 185 && tx <= 365 && ty >= 165 && ty <= 207) {
-                                                                                        doomStartRequested = true;
-                                                                                    } else if (selectedTab == 3 && ty >= 188 && ty <= 226) {
-                                                                                                        if (tx >= 320 && tx <= 356 && driveDeadbandPct > 0) --driveDeadbandPct;
-                                                                                                        else if (tx >= 430 && tx <= 466 && driveDeadbandPct < 25) ++driveDeadbandPct;
-                                                                                                    }
-                                                                                                }
-                                                                                                wasTouching = touching;
-                                                                                            } else if (!touching && wasTouching) {
+                                                                                                                    if (radialMenuOpen) {
+                                                                                                                        // Check if tapping on a radial menu item
+                                                                                                                        int cx = 240, cy = 120;
+                                                                                                                        float radius = 80 * radialMenuProgress;
+                                                                                                                        for (int i = 0; i < radialMenuCount; ++i) {
+                                                                                                                            RadialMenuItem& item = radialMenuItems[i];
+                                                                                                                            float angle = item.angle - 3.14159f / 2;
+                                                                                                                            int ix = cx + (int)(radius * cosf(angle));
+                                                                                                                            int iy = cy + (int)(radius * sinf(angle));
+                                                                                                                            int dx = tx - ix;
+                                                                                                                            int dy = ty - iy;
+                                                                                                                            if (dx * dx + dy * dy <= 225) { // 15px radius
+                                                                            if (item.enabled) {
+                                                                                handleRadialMenuAction(i);
+                                                                            }
+                                                                            break;
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                        closeRadialMenu();
+                                                                                                                    } else if (tx < kSideW && ty >= kTabTop) {
+                                                                                                                        int idx = (ty - kTabTop) / kTabH;
+                                                                                                                        if (idx >= 0 && idx < 8) selectedTab = idx;  // Support all 8 tabs
+                                                                                                                        } else if (selectedTab == 6 && !doomStarted && !doomUnavailable &&
+                                                                               tx >= 185 && tx <= 365 && ty >= 165 && ty <= 207) {
+                                                                                                                            doomStartRequested = true;
+                                                                                                                        } else if (selectedTab == 3 && ty >= 188 && ty <= 226) {
+                                                                                        if (tx >= 320 && tx <= 356 && driveDeadbandPct > 0) --driveDeadbandPct;
+                                                                                        else if (tx >= 430 && tx <= 466 && driveDeadbandPct < 25) ++driveDeadbandPct;
+                                                                                    }
+                                                                                }
+                                                                                wasTouching = touching;
+                                                                            } else if (!touching && wasTouching) {
                                                                                 // Touch released - check for long press to open radial menu
                                                                                 int touchDuration = Brain.Timer.time(msec) - touchStartTime;
                                                                                 if (touchDuration > 500) {
@@ -3391,6 +3415,9 @@ void drawAdvancedEffects() {
     drawRibbons();
     drawShockwaves();
     drawEnergyOrbs();
+    
+    // Draw radial menu if open
+    if (radialMenuOpen) drawRadialMenu();
 }
 
 // Trigger effects based on game events
@@ -3782,6 +3809,37 @@ void openRadialMenu() {
 
 void closeRadialMenu() {
     radialMenuOpen = false;
+    radialMenuProgress = 0.0f;
+}
+
+void handleRadialMenuAction(int index) {
+    switch (index) {
+        case 0: // THEME +
+            triggerThemeChange(ThemeMode((currentTheme + 1) % THEME_COUNT));
+            break;
+        case 1: // THEME -
+            triggerThemeChange(ThemeMode((currentTheme + THEME_COUNT - 1) % THEME_COUNT));
+            break;
+        case 2: // PARTICLES
+            // Toggle particle effects
+            break;
+        case 3: // REPLAY
+            // Toggle replay system
+            break;
+        case 4: // SETTINGS
+            selectedTab = 4; // SYSTEM tab
+            break;
+        case 5: // MOTORS
+            selectedTab = 7; // MOTOR CFG tab
+            break;
+        case 6: // DOOM
+            selectedTab = 6; // DOOM tab
+            break;
+        case 7: // ACHIEVE
+            selectedTab = 5; // DEBUG tab (has achievements)
+            break;
+    }
+    closeRadialMenu();
 }
 
 // Profiler
