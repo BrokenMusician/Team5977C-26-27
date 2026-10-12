@@ -122,24 +122,21 @@ constexpr int kTrail = 8;  // Increased for smoother trails
 
 struct Rgb { int r, g, b; };
 #define PAL(name, R, G, B) const Rgb name##Rgb = {R, G, B}; const color name(R, G, B);
-// Premium color palette with deeper contrast - refined for maximum visual appeal
-PAL(cBg, 12, 14, 22)
-PAL(cPanel, 22, 28, 42)
-PAL(cLine, 56, 72, 96)
-PAL(cText, 255, 255, 255)
-PAL(cMuted, 140, 160, 188)
-PAL(cAccent, 0, 220, 255)
-PAL(cAccent2, 255, 60, 150)
-PAL(cGood, 60, 255, 150)
-PAL(cWarn, 255, 200, 40)
-PAL(cDanger, 255, 60, 70)
-PAL(cRain, 0, 30, 48)
-// Premium accent colors
-PAL(cGold, 255, 215, 0)
-PAL(cCyan, 0, 255, 255)
-PAL(cOrange, 255, 140, 0)
-PAL(cPurple, 180, 60, 255)
-PAL(cLime, 180, 255, 60)
+// Clean, professional color palette - minimal and readable
+PAL(cBg, 18, 20, 26)
+PAL(cPanel, 28, 32, 42)
+PAL(cLine, 60, 70, 88)
+PAL(cText, 230, 235, 245)
+PAL(cMuted, 120, 135, 155)
+PAL(cAccent, 0, 180, 220)
+PAL(cAccent2, 220, 80, 100)
+PAL(cGood, 60, 200, 120)
+PAL(cWarn, 230, 180, 40)
+PAL(cDanger, 220, 70, 70)
+PAL(cRain, 0, 25, 40)
+// Subtle accent colors
+PAL(cGold, 220, 190, 0)
+PAL(cCyan, 0, 200, 200)
 
 // Dynamic theme system
 enum ThemeMode { THEME_CYBER, THEME_NEON, THEME_FIRE, THEME_ICE, THEME_GOLD, THEME_COUNT };
@@ -2381,6 +2378,8 @@ static inline void pageDebug(const Tel& t) {
                         // ============================================================================
                         // Doom page is defined below the UI loop.
                         static inline void pageDoom(const Tel& t);
+                                                // Motor config page is defined below the UI loop.
+                                                static inline void pageMotorConfig(const Tel& t);
 
                         // MAIN UI RENDER LOOP - Ultra-smooth 60fps target
                         // ============================================================================
