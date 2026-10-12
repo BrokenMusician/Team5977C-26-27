@@ -4393,7 +4393,118 @@ void initializeDrive() {
         bootAnimation();
 }
 
-int main() {
+        /* ---------------------------------- MOTOR CONFIG page --------------------------------- */
+
+        static inline void pageMotorConfig(const Tel& t) {
+            (void)t;
+            gCard(76, 32, 398, 200, "MOTOR CONFIGURATION // HOT-SWAP");
+    
+            // Header
+            Brain.Screen.setFont(prop20);
+            gTextC(275, 50, 12, cAccent, "MOTOR PORT CONFIG");
+            Brain.Screen.setFont(mono12);
+            gTextC(275, 70, 8, cMuted, "Tap a motor to edit. Restart required for changes.");
+    
+            // Motor list
+            for (int i = 0; i < 4; ++i) {
+                int y = 90 + i * 30;
+                bool sel = i == motorConfigSelected;
+                color bg = sel ? cAccent : cPanel;
+                color border = sel ? cText : cLine;
+                color text = sel ? cBg : cText;
+        
+                gRect(84, y, 312, 26, bg);
+                gBox(84, y, 312, 26, border);
+        
+                // Motor name and port
+                char buf[64];
+                const char* ratioStr = motorConfigs[i].ratio == 0 ? "18:1" : motorConfigs[i].ratio == 1 ? "36:1" : "6:1";
+                snprintf(buf, sizeof(buf), "%s  |  PORT %d  |  %s  |  %s  |  %s",
+                         motorConfigs[i].name,
+                         motorConfigs[i].port,
+                         ratioStr,
+                         motorConfigs[i].reversed ? "REV" : "FWD",
+                         motorConfigs[i].enabled ? "ON" : "OFF");
+                gText(90, y + 18, text, "%s", buf);
+        
+                // Selection indicator
+                if (sel) {
+                    gText(370, y + 18, cAccent2, ">");
+                }
+            }
+    
+            // Instructions
+            gTextC(275, 220, 7, cMuted, "UP/DOWN: SELECT  |  LEFT/RIGHT: EDIT FIELD  |  A: TOGGLE  |  X: APPLY (RESTART)");
+    
+            // Handle touch input for motor config
+            if (Brain.Screen.pressing()) {
+                int tx = Brain.Screen.xPosition();
+                int ty = Brain.Screen.yPosition();
+        
+                // Check if tapping on a motor row
+                for (int i = 0; i < 4; ++i) {
+                    int y = 90 + i * 30;
+                    if (tx >= 84 && tx <= 396 && ty >= y && ty <= y + 26) {
+                        motorConfigSelected = i;
+                        motorConfigEditing = true;
+                        motorConfigEditField = 0;
+                        break;
+                    }
+                }
+            }
+    
+            // Handle controller input for editing
+            static bool lastUp = false, lastDown = false, lastLeft = false, lastRight = false, lastA = false, lastX = false;
+            bool up = Controller1.ButtonUp.pressing();
+            bool down = Controller1.ButtonDown.pressing();
+            bool left = Controller1.ButtonLeft.pressing();
+            bool right = Controller1.ButtonRight.pressing();
+            bool aBtn = Controller1.ButtonA.pressing();
+            bool xBtn = Controller1.ButtonX.pressing();
+    
+            if (up && !lastUp) {
+                motorConfigSelected = (motorConfigSelected + 3) % 4;
+            }
+            if (down && !lastDown) {
+                motorConfigSelected = (motorConfigSelected + 1) % 4;
+            }
+            if (left && !lastLeft && motorConfigEditing) {
+                motorConfigEditField = (motorConfigEditField + 3) % 4;
+            }
+            if (right && !lastRight && motorConfigEditing) {
+                motorConfigEditField = (motorConfigEditField + 1) % 4;
+            }
+            if (aBtn && !lastA && motorConfigEditing) {
+                MotorConfig& mc = motorConfigs[motorConfigSelected];
+                switch (motorConfigEditField) {
+                    case 0: // Port
+                        mc.port = (mc.port % 21) + 1;
+                        break;
+                    case 1: // Reversed
+                        mc.reversed = !mc.reversed;
+                        break;
+                    case 2: // Ratio
+                        mc.ratio = (mc.ratio + 1) % 3;
+                        break;
+                    case 3: // Enabled
+                        mc.enabled = !mc.enabled;
+                        break;
+                }
+            }
+            if (xBtn && !lastX) {
+                // Apply configuration - would require restart
+                reconfigureMotors();
+            }
+    
+            lastUp = up;
+            lastDown = down;
+            lastLeft = left;
+            lastRight = right;
+            lastA = aBtn;
+            lastX = xBtn;
+        }
+
+        int main() {
     competition::bStopTasksBetweenModes = true;
     srand((unsigned int)Brain.Timer.time(msec)); // Seed RNG for particle effects
     initializeDrive();
