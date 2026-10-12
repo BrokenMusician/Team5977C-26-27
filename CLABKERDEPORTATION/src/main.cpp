@@ -2531,7 +2531,8 @@ static inline void pageDebug(const Tel& t) {
                                                                             case 4: pageSystem(t); break;
                                                                             case 5: pageDebug(t); break;
                                                                             case 6: pageDoom(t); break;
-                                                                            default: pageSystem(t); break;
+                                                                                                                                                        case 7: pageMotorConfig(t); break;
+                                                                                                                                                        default: pageSystem(t); break;
                                                                         }
 
                                                                         // Draw ambient particles on top
@@ -2601,7 +2602,7 @@ static inline void pageDebug(const Tel& t) {
                                             int ty = Brain.Screen.yPosition();
                                             if (tx < kSideW && ty >= kTabTop) {
                                                 int idx = (ty - kTabTop) / kTabH;
-                                                if (idx >= 0 && idx < 7) selectedTab = idx;  // Support all 7 tabs
+                                                if (idx >= 0 && idx < 8) selectedTab = idx;  // Support all 8 tabs
                                                 } else if (selectedTab == 6 && !doomStarted && !doomUnavailable &&
                                                            tx >= 185 && tx <= 365 && ty >= 165 && ty <= 207) {
                                                     doomStartRequested = true;
