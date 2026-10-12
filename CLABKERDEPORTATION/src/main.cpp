@@ -139,10 +139,31 @@ PAL(cGold, 220, 190, 0)
 PAL(cCyan, 0, 200, 200)
 
 // Dynamic theme system
-enum ThemeMode { THEME_CYBER, THEME_NEON, THEME_FIRE, THEME_ICE, THEME_GOLD, THEME_COUNT };
+enum ThemeMode { THEME_CYBER, THEME_NEON, THEME_FIRE, THEME_ICE, THEME_GOLD, THEME_MATRIX, THEME_STEALTH, THEME_COUNT };
 ThemeMode currentTheme = THEME_CYBER;
 int themeTransitionFrame = 0;
 bool themeTransitioning = false;
+
+// Theme color definitions
+struct ThemeColors {
+    color bg, panel, line, text, muted, accent, accent2, good, warn, danger;
+};
+ThemeColors themePalettes[THEME_COUNT] = {
+    // CYBER
+    {color(18,20,26), color(28,32,42), color(60,70,88), color(230,235,245), color(120,135,155), color(0,180,220), color(220,80,100), color(60,200,120), color(230,180,40), color(220,70,70)},
+    // NEON
+    {color(10,10,20), color(20,15,35), color(80,40,120), color(255,255,255), color(180,120,200), color(255,0,255), color(0,255,255), color(0,255,128), color(255,255,0), color(255,64,64)},
+    // FIRE
+    {color(25,10,5), color(45,20,10), color(120,60,20), color(255,240,220), color(200,140,80), color(255,120,0), color(255,200,0), color(255,180,40), color(255,220,60), color(255,60,20)},
+    // ICE
+    {color(15,20,30), color(25,35,50), color(60,100,140), color(220,240,255), color(120,160,200), color(0,180,255), color(100,220,255), color(80,220,255), color(180,220,255), color(100,200,255)},
+    // GOLD
+    {color(25,20,5), color(45,35,10), color(120,100,20), color(255,245,220), color(200,180,100), color(255,200,0), color(255,160,0), color(200,220,60), color(255,200,40), color(220,80,40)},
+    // MATRIX
+    {color(0,15,0), color(0,25,0), color(0,60,0), color(0,255,60), color(0,160,30), color(0,255,60), color(0,200,40), color(0,255,80), color(120,255,120), color(255,80,80)},
+    // STEALTH
+    {color(8,8,10), color(18,18,22), color(40,40,50), color(180,180,190), color(100,100,110), color(100,140,180), color(80,120,160), color(80,160,120), color(160,180,100), color(180,100,100)},
+};
 
 // Chromatic aberration offset
 int chromaticOffset = 0;
@@ -2922,7 +2943,7 @@ void triggerThemeChange(ThemeMode newTheme) {
         themeTransitionFrame = 0;
         // Trigger shockwave on theme change
         triggerShake(8, 300);
-        spawnParticles(240, 120, 30, cGold, 2.0f, 6.0f, 2, 5, 1000);
+        spawnParticles(240, 120, 30, themePalettes[currentTheme].accent, 2.0f, 6.0f, 2, 5, 1000);
     }
 }
 
@@ -3708,24 +3729,40 @@ void drawRadialMenu() {
 void openRadialMenu() {
     radialMenuOpen = true;
     radialMenuProgress = 0.0f;
-    // Default items
-    radialMenuCount = 4;
-    strcpy(radialMenuItems[0].label, "THEME");
+    // Default items - expanded with theme cycling
+    radialMenuCount = 8;
+    strcpy(radialMenuItems[0].label, "THEME +");
     radialMenuItems[0].c = cAccent;
     radialMenuItems[0].angle = 0;
     radialMenuItems[0].enabled = true;
-    strcpy(radialMenuItems[1].label, "PARTICLES");
+    strcpy(radialMenuItems[1].label, "THEME -");
     radialMenuItems[1].c = cAccent2;
-    radialMenuItems[1].angle = 90 * 0.0174533f;
+    radialMenuItems[1].angle = 45 * 0.0174533f;
     radialMenuItems[1].enabled = true;
-    strcpy(radialMenuItems[2].label, "REPLAY");
+    strcpy(radialMenuItems[2].label, "PARTICLES");
     radialMenuItems[2].c = cGood;
-    radialMenuItems[2].angle = 180 * 0.0174533f;
+    radialMenuItems[2].angle = 90 * 0.0174533f;
     radialMenuItems[2].enabled = true;
-    strcpy(radialMenuItems[3].label, "SETTINGS");
+    strcpy(radialMenuItems[3].label, "REPLAY");
     radialMenuItems[3].c = cWarn;
-    radialMenuItems[3].angle = 270 * 0.0174533f;
+    radialMenuItems[3].angle = 135 * 0.0174533f;
     radialMenuItems[3].enabled = true;
+    strcpy(radialMenuItems[4].label, "SETTINGS");
+    radialMenuItems[4].c = cGold;
+    radialMenuItems[4].angle = 180 * 0.0174533f;
+    radialMenuItems[4].enabled = true;
+    strcpy(radialMenuItems[5].label, "MOTORS");
+    radialMenuItems[5].c = cCyan;
+    radialMenuItems[5].angle = 225 * 0.0174533f;
+    radialMenuItems[5].enabled = true;
+    strcpy(radialMenuItems[6].label, "DOOM");
+    radialMenuItems[6].c = cAccent2;
+    radialMenuItems[6].angle = 270 * 0.0174533f;
+    radialMenuItems[6].enabled = true;
+    strcpy(radialMenuItems[7].label, "ACHIEVE");
+    radialMenuItems[7].c = cGold;
+    radialMenuItems[7].angle = 315 * 0.0174533f;
+    radialMenuItems[7].enabled = true;
 }
 
 void closeRadialMenu() {
