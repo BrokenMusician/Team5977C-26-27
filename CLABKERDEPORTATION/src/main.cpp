@@ -2499,14 +2499,14 @@ static inline void pageDebug(const Tel& t) {
                                     // Update ambient particles with delta time
                                     updateParticles((int)deltaTime);
                                     ambientParticleTimer += (int)deltaTime;
-                                    if (ambientParticleTimer > 2000 && particleCount < 20) {
-                                        // Occasional ambient particles
-                                        spawnParticles(rand() % 480, rand() % 240, 1, cMuted, 0.2f, 0.8f, 1, 2, 3000);
+                                                                        if (ambientParticleTimer > 8000 && particleCount < 5) {
+                                                                            // Rare ambient particles
+                                                                            spawnParticles(rand() % 480, rand() % 240, 1, cMuted, 0.1f, 0.4f, 1, 1, 4000);
                                         ambientParticleTimer = 0;
                                     }
-                                    // Driving particles
-                                    if (isDriving && (uiFrame % 4 == 0)) {
-                                        spawnParticles(171, 106, 2, cAccent, 0.5f, 1.5f, 1, 2, 400);
+                                                                        // Driving particles - minimal
+                                                                        if (isDriving && (uiFrame % 30 == 0)) {
+                                                                            spawnParticles(171, 106, 1, cAccent, 0.2f, 0.6f, 1, 1, 300);
                                     }
             
                                     // Update advanced effects
