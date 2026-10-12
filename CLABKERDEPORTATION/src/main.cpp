@@ -37,6 +37,13 @@ motor* const motorDevices[4] = {&LeftMotor1, &LeftMotor2, &RightMotor1, &RightMo
 controller Controller1;
 competition Competition;
 
+// Function to reinitialize motors with new port configuration
+void reconfigureMotors() {
+    // Note: VEX motors can't be dynamically reconfigured at runtime in VEXcode
+    // This would require a restart. We store the config for display and future use.
+    // For actual hot-swapping, the user would need to restart the program.
+}
+
 /* ------------------------------- settings -------------------------------- */
 
 int driveDeadbandPct = 5;
@@ -48,6 +55,24 @@ bool doomStartRequested = false;
 bool doomWadMissing = false;
 bool doomUnavailable = false;
 char doomExitMessage[96] = "";
+
+// Motor port configuration for hot-swapping
+struct MotorConfig {
+    int port;
+    bool reversed;
+    int ratio; // 0=18:1, 1=36:1, 2=6:1
+    char name[16];
+    bool enabled;
+};
+MotorConfig motorConfigs[4] = {
+    {1, false, 0, "LEFT A", true},
+    {2, false, 0, "LEFT B", true},
+    {3, false, 0, "RIGHT A", true},
+    {3, false, 0, "RIGHT B", true}
+};
+int motorConfigSelected = 0;
+bool motorConfigEditing = false;
+int motorConfigEditField = 0; // 0=port, 1=reversed, 2=ratio, 3=enabled
 
 static void handleDoomExit(int result) {
     doomStarted = false;
@@ -69,7 +94,7 @@ int transitionFramesLeft = 0;
 
 const int motorPorts[4] = {1, 2, 3, 4};
 const char* const motorNames[4] = {"LEFT A", "LEFT B", "RIGHT A", "RIGHT B"};
-const char* const tabNames[7] = {"DASH", "MOTORS", "GRAPH", "INPUT", "SYSTEM", "DEBUG", "DOOM"};
+const char* const tabNames[8] = {"DASH", "MOTORS", "GRAPH", "INPUT", "SYSTEM", "DEBUG", "DOOM", "MOTOR CFG"};
 const char* const buttonNames[12] = {"L1", "L2", "R1", "R2", "A", "B", "X", "Y",
                                      "UP", "DN", "LT", "RT"};
 
@@ -97,21 +122,24 @@ constexpr int kTrail = 8;  // Increased for smoother trails
 
 struct Rgb { int r, g, b; };
 #define PAL(name, R, G, B) const Rgb name##Rgb = {R, G, B}; const color name(R, G, B);
-// Premium color palette with deeper contrast
-PAL(cBg, 18, 22, 32)
-PAL(cPanel, 34, 42, 58)
-PAL(cLine, 76, 92, 116)
-PAL(cText, 240, 248, 255)
-PAL(cMuted, 164, 180, 204)
-PAL(cAccent, 0, 210, 255)
-PAL(cAccent2, 255, 50, 140)
-PAL(cGood, 50, 255, 140)
-PAL(cWarn, 255, 196, 32)
-PAL(cDanger, 255, 50, 60)
-PAL(cRain, 0, 40, 56)
+// Premium color palette with deeper contrast - refined for maximum visual appeal
+PAL(cBg, 12, 14, 22)
+PAL(cPanel, 22, 28, 42)
+PAL(cLine, 56, 72, 96)
+PAL(cText, 255, 255, 255)
+PAL(cMuted, 140, 160, 188)
+PAL(cAccent, 0, 220, 255)
+PAL(cAccent2, 255, 60, 150)
+PAL(cGood, 60, 255, 150)
+PAL(cWarn, 255, 200, 40)
+PAL(cDanger, 255, 60, 70)
+PAL(cRain, 0, 30, 48)
 // Premium accent colors
 PAL(cGold, 255, 215, 0)
 PAL(cCyan, 0, 255, 255)
+PAL(cOrange, 255, 140, 0)
+PAL(cPurple, 180, 60, 255)
+PAL(cLime, 180, 255, 60)
 
 // Dynamic theme system
 enum ThemeMode { THEME_CYBER, THEME_NEON, THEME_FIRE, THEME_ICE, THEME_GOLD, THEME_COUNT };
