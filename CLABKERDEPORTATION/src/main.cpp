@@ -2616,23 +2616,32 @@ static inline void pageDebug(const Tel& t) {
 
                                     void handleScreenTouch() {
                                         static bool wasTouching = false;
-                                        bool touching = Brain.Screen.pressing();
-                                        if (touching && !wasTouching) {
-                                            int tx = Brain.Screen.xPosition();
-                                            int ty = Brain.Screen.yPosition();
-                                            if (tx < kSideW && ty >= kTabTop) {
-                                                int idx = (ty - kTabTop) / kTabH;
-                                                if (idx >= 0 && idx < 8) selectedTab = idx;  // Support all 8 tabs
-                                                } else if (selectedTab == 6 && !doomStarted && !doomUnavailable &&
-                                                           tx >= 185 && tx <= 365 && ty >= 165 && ty <= 207) {
-                                                    doomStartRequested = true;
-                                                } else if (selectedTab == 3 && ty >= 188 && ty <= 226) {
-                                                                    if (tx >= 320 && tx <= 356 && driveDeadbandPct > 0) --driveDeadbandPct;
-                                                                    else if (tx >= 430 && tx <= 466 && driveDeadbandPct < 25) ++driveDeadbandPct;
-                                                                }
-                                                            }
-                                                            wasTouching = touching;
-                                                        }
+                                                                            static int touchStartTime = 0;
+                                                                            bool touching = Brain.Screen.pressing();
+                                                                            if (touching && !wasTouching) {
+                                                                                touchStartTime = Brain.Timer.time(msec);
+                                                                                int tx = Brain.Screen.xPosition();
+                                                                                int ty = Brain.Screen.yPosition();
+                                                                                if (tx < kSideW && ty >= kTabTop) {
+                                                                                    int idx = (ty - kTabTop) / kTabH;
+                                                                                    if (idx >= 0 && idx < 8) selectedTab = idx;  // Support all 8 tabs
+                                                                                    } else if (selectedTab == 6 && !doomStarted && !doomUnavailable &&
+                                                                                               tx >= 185 && tx <= 365 && ty >= 165 && ty <= 207) {
+                                                                                        doomStartRequested = true;
+                                                                                    } else if (selectedTab == 3 && ty >= 188 && ty <= 226) {
+                                                                                                        if (tx >= 320 && tx <= 356 && driveDeadbandPct > 0) --driveDeadbandPct;
+                                                                                                        else if (tx >= 430 && tx <= 466 && driveDeadbandPct < 25) ++driveDeadbandPct;
+                                                                                                    }
+                                                                                                }
+                                                                                                wasTouching = touching;
+                                                                                            } else if (!touching && wasTouching) {
+                                                                                // Touch released - check for long press to open radial menu
+                                                                                int touchDuration = Brain.Timer.time(msec) - touchStartTime;
+                                                                                if (touchDuration > 500) {
+                                                                                    openRadialMenu();
+                                                                                }
+                                                                                wasTouching = false;
+                                                                            }
 
 /* ------------------------------- boot sequence ----------------------------- */
 
@@ -3700,6 +3709,12 @@ void unlockAchievement(const char* name, const char* desc, color c) {
 // Radial menu
 void drawRadialMenu() {
     if (!radialMenuOpen || radialMenuCount == 0) return;
+    
+    // Animate menu opening
+    if (radialMenuProgress < 1.0f) {
+        radialMenuProgress += 0.15f;
+        if (radialMenuProgress > 1.0f) radialMenuProgress = 1.0f;
+    }
     
     int cx = 240, cy = 120;
     float radius = 80 * radialMenuProgress;
