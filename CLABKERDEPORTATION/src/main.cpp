@@ -25,6 +25,12 @@ uint32_t vexDoomMillis(void);
 void vexDoomSleep(int milliseconds);
 }
 
+// Radial menu functions
+void openRadialMenu();
+void closeRadialMenu();
+void drawRadialMenu();
+void handleRadialMenuAction(int index);
+
 vex::brain Brain;
 
 motor LeftMotor1 = motor(PORT1, ratio18_1, false);
@@ -2397,15 +2403,10 @@ static inline void pageDebug(const Tel& t) {
                         }
 
                         // ============================================================================
-                        // Doom page is defined below the UI loop.
-                        static inline void pageDoom(const Tel& t);
+                                                // Doom page is defined below the UI loop.
+                                                static inline void pageDoom(const Tel& t);
                                                 // Motor config page is defined below the UI loop.
                                                 static inline void pageMotorConfig(const Tel& t);
-                                                // Radial menu functions
-                                                void openRadialMenu();
-                                                void closeRadialMenu();
-                                                void drawRadialMenu();
-                                                void handleRadialMenuAction(int index);
 
                         // MAIN UI RENDER LOOP - Ultra-smooth 60fps target
                         // ============================================================================
@@ -2649,16 +2650,16 @@ static inline void pageDebug(const Tel& t) {
                                                                                                                     } else if (tx < kSideW && ty >= kTabTop) {
                                                                                                                         int idx = (ty - kTabTop) / kTabH;
                                                                                                                         if (idx >= 0 && idx < 8) selectedTab = idx;  // Support all 8 tabs
-                                                                                                                        } else if (selectedTab == 6 && !doomStarted && !doomUnavailable &&
+                                                                                                    } else if (selectedTab == 6 && !doomStarted && !doomUnavailable &&
                                                                                tx >= 185 && tx <= 365 && ty >= 165 && ty <= 207) {
                                                                                                                             doomStartRequested = true;
-                                                                                                                        } else if (selectedTab == 3 && ty >= 188 && ty <= 226) {
+                                                                                                    } else if (selectedTab == 3 && ty >= 188 && ty <= 226) {
                                                                                         if (tx >= 320 && tx <= 356 && driveDeadbandPct > 0) --driveDeadbandPct;
                                                                                         else if (tx >= 430 && tx <= 466 && driveDeadbandPct < 25) ++driveDeadbandPct;
                                                                                     }
                                                                                 }
                                                                                 wasTouching = touching;
-                                                                            } else if (!touching && wasTouching) {
+                                                                                                                                                            } else if (!touching && wasTouching) {
                                                                                 // Touch released - check for long press to open radial menu
                                                                                 int touchDuration = Brain.Timer.time(msec) - touchStartTime;
                                                                                 if (touchDuration > 500) {
