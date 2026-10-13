@@ -50,6 +50,82 @@ void reconfigureMotors() {
     // For actual hot-swapping, the user would need to restart the program.
 }
 
+// ============================================================================
+// COMPETITION FEATURES
+// ============================================================================
+
+// Lap timer for practice
+struct LapTimer {
+    bool active = false;
+    uint32_t startTime = 0;
+    uint32_t lastLapTime = 0;
+    uint32_t bestLap = UINT32_MAX;
+    int lapCount = 0;
+    uint32_t lapTimes[50];
+    int lapTimeCount = 0;
+} lapTimer;
+
+// Battery health tracking
+struct BatteryHealth {
+    int cycleCount = 0;
+    int minVoltageSeen = 10000;
+    int maxVoltageSeen = 0;
+    uint32_t lastChargeTime = 0;
+    bool wasCharging = false;
+    float healthPercent = 100.0f;
+} batteryHealth;
+
+// Motor temperature history for trend analysis
+struct MotorTempTrend {
+    int history[60]; // 1 minute at 1Hz
+    int index = 0;
+    bool filled = false;
+} motorTempTrends[4];
+
+// Driver assist settings
+struct DriverAssist {
+    bool enabled = false;
+    bool driftCorrection = true;
+    bool autoStraighten = false;
+    float straightenThreshold = 5.0f; // degrees
+    float maxCorrection = 15; // motor power
+} driverAssist;
+
+// Quick stats overlay
+bool showQuickStats = false;
+uint32_t quickStatsTimer = 0;
+
+// Pit mode for competition
+bool pitMode = false;
+uint32_t pitModeTimer = 0;
+
+// Autonomous selector
+int selectedAuton = 0;
+const char* autonNames[8] = {
+    "SKILLS", "ELIMS LEFT", "ELIMS RIGHT", "QUALS LEFT",
+    "QUALS RIGHT", "AWP", "DEFENSIVE", "TEST"
+};
+
+// Field position tracking (odometry)
+struct Odometry {
+    float x = 0, y = 0, heading = 0;
+    float lastLeft = 0, lastRight = 0;
+    bool initialized = false;
+} odom;
+
+// High score tracker for DOOM
+struct DoomStats {
+    int highScore = 0;
+    int gamesPlayed = 0;
+    uint32_t bestTime = 0; // fastest completion
+    int totalKills = 0;
+    int secretsFound = 0;
+} doomStats;
+
+// Practice mode
+bool practiceMode = false;
+uint32_t practiceStartTime = 0;
+
 /* ------------------------------- settings -------------------------------- */
 
 int driveDeadbandPct = 5;
@@ -100,7 +176,7 @@ int transitionFramesLeft = 0;
 
 const int motorPorts[4] = {1, 2, 3, 4};
 const char* const motorNames[4] = {"LEFT A", "LEFT B", "RIGHT A", "RIGHT B"};
-const char* const tabNames[8] = {"DASH", "MOTORS", "GRAPH", "INPUT", "SYSTEM", "DEBUG", "DOOM", "MOTOR CFG"};
+const char* const tabNames[9] = {"DASH", "MOTORS", "GRAPH", "INPUT", "SYSTEM", "DEBUG", "DOOM", "MOTOR CFG", "COMPETE"};
 const char* const buttonNames[12] = {"L1", "L2", "R1", "R2", "A", "B", "X", "Y",
                                      "UP", "DN", "LT", "RT"};
 
