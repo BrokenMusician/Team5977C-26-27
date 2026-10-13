@@ -2657,7 +2657,6 @@ static inline void pageDebug(const Tel& t) {
                                                                                         if (tx >= 320 && tx <= 356 && driveDeadbandPct > 0) --driveDeadbandPct;
                                                                                         else if (tx >= 430 && tx <= 466 && driveDeadbandPct < 25) ++driveDeadbandPct;
                                                                                     }
-                                                                                }
                                                                                 wasTouching = touching;
                                                                                                                                                             } else if (!touching && wasTouching) {
                                                                                 // Touch released - check for long press to open radial menu
