@@ -253,101 +253,6 @@ bool colorGradingEnabled = true;
 int maxFrameTime = 0;
 int avgFrameTime = 0;
 int frameTimeSamples = 0;
-    Vec3 start;
-    Vec3 end;
-    color color;
-    float intensity;
-    int samples;
-    bool active;
-};
-LightShaft lightShafts[16];
-int lightShaftCount = 0;
-
-// Fog system
-struct FogSettings {
-    bool enabled;
-    color color;
-    float density;
-    float start;
-    float end;
-    int mode; // 0=linear, 1=exp, 2=exp2
-};
-FogSettings fogSettings = {true, {10, 12, 18}, 0.001f, 50.0f, 500.0f, 1};
-
-// Weather/atmosphere system
-enum WeatherType { WEATHER_NONE, WEATHER_RAIN, WEATHER_SNOW, WEATHER_STORM, WEATHER_AURORA };
-WeatherType currentWeather = WEATHER_NONE;
-struct WeatherParticle {
-    float x, y, vx, vy, life;
-    color c;
-    float size;
-    bool active;
-};
-WeatherParticle weatherParticles[200];
-int weatherParticleCount = 0;
-
-// Advanced weather effects
-struct CloudLayer {
-    float x, y, speedX, speedY;
-    float scale;
-    color tint;
-    float opacity;
-    int textureType;
-    bool active;
-};
-CloudLayer cloudLayers[8];
-int cloudLayerCount = 0;
-
-struct LightningBolt {
-    Vec3 start;
-    Vec3 end;
-    Vec3* segments;
-    int segmentCount;
-    float life;
-    float maxLife;
-    color color;
-    float intensity;
-    bool active;
-};
-LightningBolt lightningBolts[16];
-int lightningBoltCount = 0;
-
-// Aurora borealis
-struct AuroraBand {
-    float y;
-    float height;
-    float speed;
-    color color1;
-    color color2;
-    float phase;
-    float waveSpeed;
-    bool active;
-};
-AuroraBand auroraBands[8];
-int auroraBandCount = 0;
-
-// Particle field system (for snow, rain, ash, etc.)
-struct ParticleField {
-    Vec3 boundsMin;
-    Vec3 boundsMax;
-    Vec3 gravity;
-    Vec3 wind;
-    float spawnRate;
-    float particleLife;
-    float particleSize;
-    color particleColor;
-    int maxParticles;
-    bool active;
-    int type; // 0=rain, 1=snow, 2=ash, 3=leaves, 4=sparks
-};
-ParticleField particleFields[4];
-int particleFieldCount = 0;
-
-// Advanced UI transitions
-enum TransitionType { TRANS_NONE, TRANS_WIPE, TRANS_FADE, TRANS_SLIDE, TRANS_ZOOM, TRANS_ROTATE, TRANS_GLITCH };
-TransitionType currentTransition = TRANS_WIPE;
-float transitionProgress = 0;
-int transitionDuration = 300;
 
 // Shader-like post-processing effects
 struct PostProcessEffect {
@@ -488,31 +393,17 @@ struct TelemetryGraph {
     color c;
     float minVal, maxVal;
     bool autoScale;
-};
-TelemetryGraph telemetryGraphs[8];
+    };
+    TelemetryGraph telemetryGraphs[8];
 
-// Advanced telemetry - 3D graphs
-struct TelemetryGraph3D {
-    Vec3 points[200];
-    int pointCount;
-    color color;
-    float scale;
-    Vec3 rotation;
-    bool wireframe;
-    bool showGrid;
-    bool showAxes;
-};
-TelemetryGraph3D telemetryGraphs3D[4];
-int telemetryGraph3DCount = 0;
-
-// Particle text system
-struct TextParticle {
-    float x, y, vx, vy;
-    char text[16];
-    color c;
-    float life, maxLife;
-    float scale;
-    bool active;
+    // Particle text system
+    struct TextParticle {
+        float x, y, vx, vy;
+        char text[16];
+        color c;
+        float life, maxLife;
+        float scale;
+        bool active;
 };
 TextParticle textParticles[32];
 int textParticleCount = 0;
@@ -2919,124 +2810,21 @@ void drawParallaxBackground() {
                         gDot(sx, sy, 2, pc);
                     }
                     break;
-                case 3: // Nebula
-                    for (int n = 0; n < 5; ++n) {
-                        int nx = (int)(lx + (n * 157 + i * 53) % 480);
-                        int ny = (int)(ly + (n * 173 + i * 67) % 240);
-                        int nr = 30 + (n * 23 + i * 11) % 50;
-                        color nc = mix8(p.tint, cBg, (int)(p.opacity * 80));
-                        gRing(nx, ny, nr, nc);
+                                    case 3: // Nebula
+                                        for (int n = 0; n < 5; ++n) {
+                                            int nx = (int)(lx + (n * 157 + i * 53) % 480);
+                                            int ny = (int)(ly + (n * 173 + i * 67) % 240);
+                                            int nr = 30 + (n * 23 + i * 11) % 50;
+                                            color nc = mix8(p.tint, cBg, (int)(p.opacity * 80));
+                                            gRing(nx, ny, nr, nc);
+                                        }
+                                        break;
+                                }
+                            }
+                        }
                     }
-                    break;
-            }
-        }
-    }
-}
 
-// Procedural background
-void drawProceduralBackground() {
-    for (int i = 0; i < bgElementCount; ++i) {
-        BGElement& b = bgElements[i];
-        if (!b.active) continue;
-        
-        int x = (int)b.x;
-        int y = (int)b.y;
-        int sz = (int)b.size;
-        color c = b.c;
-        
-        switch (b.type) {
-            case 0: // Circle
-                gRing(x, y, sz, c);
-                break;
-            case 1: // Square
-                gBox(x - sz/2, y - sz/2, sz, sz, c);
-                break;
-            case 2: // Triangle (approximated with lines)
-                gLine(x, y - sz/2, x + sz/2, y + sz/2, c);
-                gLine(x + sz/2, y + sz/2, x - sz/2, y + sz/2, c);
-                gLine(x - sz/2, y + sz/2, x, y - sz/2, c);
-                break;
-            case 3: // Star
-                for (int s = 0; s < 5; ++s) {
-                    float angle = s * 2.0f * 3.14159f / 5.0f + b.rotation;
-                    int sx = x + (int)(sz * cosf(angle));
-                    int sy = y + (int)(sz * sinf(angle));
-                    gLine(x, y, sx, sy, c);
-                }
-                break;
-        }
-    }
-}
-
-// Hologram elements
-void drawHologramElements() {
-    for (int i = 0; i < hologramCount; ++i) {
-        HologramElement& h = hologramElements[i];
-        if (!h.active) continue;
-        
-        int x = (int)h.x;
-        int y = (int)h.y;
-        int sz = (int)(h.scale * 20);
-        color c = h.c;
-        
-        // Pulsing effect
-        float pulse = 1.0f + 0.1f * sinf(h.pulsePhase);
-        sz = (int)(sz * pulse);
-        
-        // Scanline effect for hologram
-        for (int sy = y - sz; sy < y + sz; sy += 2) {
-            float alpha = 0.5f + 0.5f * sinf(h.pulsePhase + sy * 0.1f);
-            color scanC = mix8(colorToRgb(c), cBgRgb, (int)(alpha * 256));
-            gRect(x - sz, sy, sz * 2, 1, scanC);
-        }
-        
-        // Core element
-        switch (h.type) {
-            case 0: // Text
-                gTextC(x, y, 8, c, "HUD");
-                break;
-            case 1: // Icon
-                gRing(x, y, sz, c);
-                gRing(x, y, sz/2, mix8(c, cText, 128));
-                break;
-            case 2: // Graph
-                for (int g = 0; g < 10; ++g) {
-                    int gx = x - sz + g * sz / 5;
-                    int gy = y + (int)(sz * 0.5f * sinf(g * 0.5f + h.pulsePhase));
-                    gDot(gx, gy, 2, c);
-                }
-                break;
-            case 3: // 3D Model (wireframe cube)
-                {
-                    float angle = h.rotation;
-                    float ca = cosf(angle), sa = sinf(angle);
-                    int cx = x, cy = y;
-                    int half = sz / 2;
-                    // Draw wireframe cube
-                    int pts[8][2];
-                    for (int v = 0; v < 8; ++v) {
-                        float vx = (v & 1) ? half : -half;
-                        float vy = (v & 2) ? half : -half;
-                        float vz = (v & 4) ? half : -half;
-                        // Simple orthographic projection
-                        float px = vx * ca - vz * sa;
-                        float py = vy;
-                        pts[v][0] = cx + (int)px;
-                        pts[v][1] = cy + (int)py;
-                    }
-                    // Edges
-                    int edges[12][2] = {{0,1},{1,3},{3,2},{2,0},{4,5},{5,7},{7,6},{6,4},{0,4},{1,5},{2,6},{3,7}};
-                    for (int e = 0; e < 12; ++e) {
-                        gLine(pts[edges[e][0]][0], pts[edges[e][0]][1], 
-                              pts[edges[e][1]][0], pts[edges[e][1]][1], c);
-                    }
-                }
-                break;
-        }
-    }
-}
-
-// Notifications
+                    // Notifications
 void drawNotifications() {
     for (int i = 0; i < notificationCount; ++i) {
         Notification& n = notifications[i];
@@ -3568,36 +3356,17 @@ void drawInputVisualization() {
         color bc = inputViz.buttons[i] ? cAccent : cLine;
         if (anim > 0) bc = mix8(bc, cText, (int)(anim * 256));
         gRect(bx, by, 20, 20, inputViz.buttons[i] ? cAccent : cBg);
-        gBox(bx, by, 20, 20, bc);
-        gTextC(bx + 10, by + 12, 7, inputViz.buttons[i] ? cBg : cText, "%s", buttonNames[i]);
-    }
-}
+                gBox(bx, by, 20, 20, bc);
+                gTextC(bx + 10, by + 12, 7, inputViz.buttons[i] ? cBg : cText, "%s", buttonNames[i]);
+            }
+        }
 
-// Minimap
-void drawMinimap() {
-    int x = minimapX, y = minimapY, s = minimapSize;
-    gRect(x, y, s, s, cPanel);
-    gBox(x, y, s, s, cLine);
-    
-    // Draw field elements (simplified)
-    // Robot position
-    int rx = x + s/2;
-    int ry = y + s/2;
-    gDot(rx, ry, 4, cAccent);
-    
-    // Direction indicator
-    float angle = 0; // Would use actual heading
-    int dx = rx + (int)(6 * cosf(angle));
-    int dy = ry + (int)(6 * sinf(angle));
-    gLine(rx, ry, dx, dy, cAccent);
-}
+        // ============================================================================
+        // EPIC MATCH OUTRO - Cinematic match ending sequence
+        // ============================================================================
 
-// ============================================================================
-// EPIC MATCH OUTRO - Cinematic match ending sequence
-// ============================================================================
-
-// Color shift for dramatic effect
-color shiftColor(color base, float phase, float intensity) {
+        // Color shift for dramatic effect
+        color shiftColor(color base, float phase, float intensity) {
     // Simple hue shift using RGB manipulation
     int r = (base >> 16) & 0xFF;
     int g = (base >> 8) & 0xFF;
