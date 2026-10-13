@@ -31,15 +31,6 @@ void closeRadialMenu();
 void drawRadialMenu();
 void handleRadialMenuAction(int index);
 
-// Forward declarations for functions extracted from drawUI
-void handleScreenTouch();
-void updateAdvancedEffects(int dt);
-void drawAdvancedEffects();
-void pageDoom(const Tel& t);
-void pageMotorConfig(const Tel& t);
-void triggerVelocityEffects(const Tel& t);
-void triggerThemeByPerformance(const Tel& t);
-
 vex::brain Brain;
 
 motor LeftMotor1 = motor(PORT1, ratio18_1, false);
@@ -127,6 +118,16 @@ struct Tel {
     float sLeft, sRight, sThr, sRpm[4];
     int peak;
 };
+
+// Forward declarations for functions extracted from drawUI
+void handleScreenTouch();
+void updateAdvancedEffects(int dt);
+void drawAdvancedEffects();
+void pageDoom(const Tel& t);
+void pageMotorConfig(const Tel& t);
+void triggerVelocityEffects(const Tel& t);
+void triggerThemeByPerformance(const Tel& t);
+
 // Leave a dedicated footer below seven tabs in the 212 px sidebar.
 constexpr int kTabH = 26;
 constexpr int kTabTop = 28;
