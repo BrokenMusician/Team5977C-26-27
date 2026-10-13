@@ -589,17 +589,6 @@ bool depthOfFieldEnabled = false;
 float dofFocus = 120.0f;
 float dofRange = 50.0f;
 
-// Procedural background
-struct BGElement {
-    float x, y, vx, vy;
-    float size, rotation, rotSpeed;
-    color c;
-    int type; // 0=circle, 1=square, 2=triangle, 3=star
-    bool active;
-};
-BGElement bgElements[64];
-int bgElementCount = 0;
-
 // Performance profiler
 struct ProfilerSection {
     const char* name;
