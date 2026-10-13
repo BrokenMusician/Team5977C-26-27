@@ -99,12 +99,12 @@ uint32_t quickStatsTimer = 0;
 bool pitMode = false;
 uint32_t pitModeTimer = 0;
 
-// Autonomous selector
-int selectedAuton = 0;
-const char* autonNames[8] = {
-    "SKILLS", "ELIMS LEFT", "ELIMS RIGHT", "QUALS LEFT",
-    "QUALS RIGHT", "AWP", "DEFENSIVE", "TEST"
-};
+// Autonomous selector (disabled until robot is complete)
+// int selectedAuton = 0;
+// const char* autonNames[8] = {
+//     "SKILLS", "ELIMS LEFT", "ELIMS RIGHT", "QUALS LEFT",
+//     "QUALS RIGHT", "AWP", "DEFENSIVE", "TEST"
+// };
 
 // Field position tracking (odometry)
 struct Odometry {
@@ -4011,20 +4011,20 @@ void pageCompete(const Tel& t) {
     gTextC(321, 152, 10, maxTemp > 60 ? cDanger : maxTemp > 40 ? cWarn : cGood, "%dC", maxTemp);
     gTextC(321, 165, 7, cMuted, "AVG: %dC", (t.mTemp[0] + t.mTemp[1] + t.mTemp[2] + t.mTemp[3]) / 4);
 
-    // Autonomous selector
-    gRect(84, 180, 312, 30, cPanel);
-    gBox(84, 180, 312, 30, cLine);
-    gTextC(275, 192, 8, cText, "AUTON: %s", autonNames[selectedAuton]);
-    gTextC(275, 205, 7, cMuted, "LEFT/RIGHT TO CHANGE");
+        // Autonomous selector (disabled until robot is complete)
+        // gRect(84, 180, 312, 30, cPanel);
+        // gBox(84, 180, 312, 30, cLine);
+        // gTextC(275, 192, 8, cText, "AUTON: %s", autonNames[selectedAuton]);
+        // gTextC(275, 205, 7, cMuted, "LEFT/RIGHT TO CHANGE");
 
     // DOOM stats
-    gRect(84, 215, 312, 20, cPanel);
-    gBox(84, 215, 312, 20, cLine);
-    gTextC(275, 227, 7, cMuted, "DOOM: %d GAMES  HIGH: %d  KILLS: %d",
+        gRect(84, 180, 312, 20, cPanel);
+        gBox(84, 180, 312, 20, cLine);
+        gTextC(275, 192, 7, cMuted, "DOOM: %d GAMES  HIGH: %d  KILLS: %d",
            doomStats.gamesPlayed, doomStats.highScore, doomStats.totalKills);
 
     // Controls hint
-    gTextC(275, 235, 7, cMuted, "A: LAP  B: RESET  X: AUTON  Y: PIT  UP/DN: QUICK STATS");
+        gTextC(275, 205, 7, cMuted, "A: LAP  B: RESET  Y: PIT  UP/DN: QUICK STATS");
 }
 
 int main() {
@@ -4077,13 +4077,14 @@ int main() {
                 if (bBtn && !lastB && selectedTab == 8) {
                     lapTimer = {}; // Reset
                 }
-                if (xBtn && !lastX && selectedTab == 8) {
-                    selectedAuton = (selectedAuton + 1) % 8;
-                }
-                if (yBtn && !lastY) {
-                    pitMode = !pitMode;
-                    pitModeTimer = now;
-                }
+                                // Autonomous selector (disabled until robot is complete)
+                                // if (xBtn && !lastX && selectedTab == 8) {
+                                //     selectedAuton = (selectedAuton + 1) % 8;
+                                // }
+                                if (yBtn && !lastY) {
+                                    pitMode = !pitMode;
+                                    pitModeTimer = now;
+                                }
                 if (upBtn && !lastUp) {
                     showQuickStats = true;
                     quickStatsTimer = now;
