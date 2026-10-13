@@ -980,89 +980,17 @@ void drawParticleTrails();
 void drawRibbons();
 void drawShockwaves();
 void drawEnergyOrbs();
-void updateAdvancedEffects(int dt);
-void drawAdvancedEffects();
-void triggerVelocityEffects(const Tel& t);
-void triggerThemeByPerformance(const Tel& t);
-void triggerThemeChange(ThemeMode newTheme);
-void triggerGlitch(int intensity, int duration);
-void updateGlitch();
-void drawVignette();
-void drawScanlines(float intensity);
-void drawCRTCurvature();
-void drawHologramScanlines();
-void drawParticleTrails();
-void drawRibbons();
-void drawShockwaves();
-void drawEnergyOrbs();
 void updateParticleTrails(int dt);
 void updateRibbons(int dt);
 void updateShockwaves(int dt);
 void updateEnergyOrbs(int dt);
 void spawnParticleTrail(float x, float y, float vx, float vy, color c, int count);
 void spawnRibbon(float x, float y, float width, color c);
-void spawnShockwave(float x, float y, float maxRadius, color c, int thickness, int durationMs);
 void spawnEnergyOrb(float x, float y, float vx, float vy, float radius, color c);
-void updateParticleTrails(int dt);
-void updateRibbons(int dt);
-void updateShockwaves(int dt);
-void updateEnergyOrbs(int dt);
-void drawParticleTrails();
-void drawRibbons();
-void drawShockwaves();
-void drawEnergyOrbs();
-void drawVignette();
-void drawScanlines(float intensity);
-void drawCRTCurvature();
-void drawHologramScanlines();
-void initColorLUT();
 color applyColorGrade(color c);
 void getThemeColors(ThemeMode theme, color& primary, color& secondary, color& accent, color& bg);
 void updateThemeTransition();
-void triggerThemeChange(ThemeMode newTheme);
-void triggerGlitch(int intensity, int duration);
 void updateGlitch();
-void drawShockwaves();
-void drawEnergyOrbs();
-void updateParticleTrails(int dt);
-void updateRibbons(int dt);
-void updateShockwaves(int dt);
-void updateEnergyOrbs(int dt);
-void spawnParticleTrail(float x, float y, float vx, float vy, color c, int count);
-void spawnRibbon(float x, float y, float width, color c);
-void spawnShockwave(float x, float y, float maxRadius, color c, int thickness, int durationMs);
-void spawnEnergyOrb(float x, float y, float vx, float vy, float radius, color c);
-void updateParticleTrails(int dt);
-void updateRibbons(int dt);
-void updateShockwaves(int dt);
-void updateEnergyOrbs(int dt);
-void drawParticleTrails();
-void drawRibbons();
-void drawShockwaves();
-void drawEnergyOrbs();
-void drawVignette();
-void drawScanlines(float intensity);
-void drawCRTCurvature();
-void drawHologramScanlines();
-void initColorLUT();
-color applyColorGrade(color c);
-void getThemeColors(ThemeMode theme, color& primary, color& secondary, color& accent, color& bg);
-void updateThemeTransition();
-void triggerThemeChange(ThemeMode newTheme);
-void triggerGlitch(int intensity, int duration);
-void updateGlitch();
-void drawVignette();
-void drawScanlines(float intensity);
-void drawCRTCurvature();
-void drawHologramScanlines();
-void drawParticleTrails();
-void drawRibbons();
-void drawShockwaves();
-void drawEnergyOrbs();
-void updateAdvancedEffects(int dt);
-void drawAdvancedEffects();
-void triggerVelocityEffects(const Tel& t);
-void triggerThemeByPerformance(const Tel& t);
 
 /* ------------------------------ small helpers ------------------------------ */
 
@@ -4616,44 +4544,15 @@ void initializeDrive() {
             }
 
             lastUp = up;
-            lastDown = down;
-            lastLeft = left;
-            lastRight = right;
-            lastA = aBtn;
-            lastX = xBtn;
-        }
-
-        // Trigger effects based on game events
-        void triggerVelocityEffects(const Tel& t) {
-            float speed = sqrtf(t.sLeft * t.sLeft + t.sRight * t.sRight) / 100.0f;
-            if (speed > 0.7f) {
-                // High speed - spawn ribbons
-                spawnRibbon(171, 106, speed * 20, cCyan);
-                if (rand() % 10 == 0) {
-                    spawnShockwave(171, 106, 50, cCyan, 2, 200);
-                }
+                        lastDown = down;
+                        lastLeft = left;
+                        lastRight = right;
+                        lastA = aBtn;
+                        lastX = xBtn;
+                    }
             }
-            if (speed > 0.9f) {
-                spawnEnergyOrb(171 + (rand() % 40 - 20), 106 + (rand() % 40 - 20), 
-                               (rand() % 200 - 100) * 0.1f, (rand() % 200 - 100) * 0.1f,
-                               15, cGold);
-            }
-        }
 
-        void triggerThemeByPerformance(const Tel& t) {
-            // Auto-switch theme based on performance
-            if (t.bat <= 20 && currentTheme != THEME_FIRE) {
-                triggerThemeChange(THEME_FIRE);
-            } else if (t.mTemp[t.hot] >= 60 && currentTheme != THEME_ICE) {
-                triggerThemeChange(THEME_ICE);
-            } else if (t.online == 4 && t.bat > 50 && t.mTemp[t.hot] < 40 && currentTheme != THEME_GOLD) {
-                triggerThemeChange(THEME_GOLD);
-            } else if (t.online < 4 && currentTheme != THEME_FIRE) {
-                triggerThemeChange(THEME_FIRE);
-            }
-        }
-
-        int main() {
+            int main() {
     competition::bStopTasksBetweenModes = true;
     srand((unsigned int)Brain.Timer.time(msec)); // Seed RNG for particle effects
     initializeDrive();
