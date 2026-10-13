@@ -622,47 +622,7 @@ int easterEggTimer = 0;
 enum EasterEggType { EGG_NONE, EGG_KONAMI, EGG_RAINBOW, EGG_MATRIX, EGG_RETRO, EGG_HYPER, EGG_CYBERPUNK, EGG_GLITCH_ART, EGG_NEON_DREAMS, EGG_VOID, EGG_HOLOGRAM, EGG_SYNTHWAVE, EGG_DIGITAL_RAIN, EGG_PLASMA };
 EasterEggType activeEasterEgg = EGG_NONE;
 
-// Holographic UI elements
-struct HologramElement {
-    float x, y, z;
-    float scale, rotation;
-    color c;
-    int type; // 0=text, 1=icon, 2=graph, 3=model
-            float pulsePhase;
-            bool active;
-        };
-        HologramElement hologramElements[32];
-        int hologramCount = 0;
-
-        // Minimap system
-    bool minimapEnabled = true;
-    int minimapX = 400, minimapY = 20, minimapSize = 60;
-
-    // Spectator mode
-    bool spectatorMode = false;
-    int spectatorTarget = -1;
-
-    // Replay system
-    struct ReplayFrame {
-        Tel tel;
-        int frame;
-    };
-    ReplayFrame replayBuffer[1800]; // 60 seconds at 30fps
-    int replayHead = 0;
-    int replayCount = 0;
-    bool replayRecording = true;
-    bool replayPlaying = false;
-    int replayPlaybackIndex = 0;
-
-    // Color palette generator
-    uint32_t paletteCache[16][16]; // 16 palettes, 16 colors each
-
-    // Time dilation
-    float timeScale = 1.0f;
-    float timeScaleTarget = 1.0f;
-    float timeScaleVel = 0.0f;
-
-    // Parallax background layers
+// Parallax background layers (minimal)
 struct ParallaxLayer {
     float x, y, speedX, speedY;
     int textureType; // 0=stars, 1=grid, 2=particles, 3=nebula
@@ -707,7 +667,7 @@ struct Particle {
     bool active;
 };
 
-constexpr int kMaxParticles = 120;
+constexpr int kMaxParticles = 30;
 Particle particles[kMaxParticles];
 int particleCount = 0;
 int shakeX = 0, shakeY = 0, shakeTime = 0;
@@ -2098,17 +2058,16 @@ static inline void pageDebug(const Tel& t) {
                         // ============================================================================
 
                                                 // MAIN UI RENDER LOOP - Ultra-smooth 60fps target
-                                                // ============================================================================
+                                                                                                // ============================================================================
 
-                                                inline void drawUI() {
-            static int lastTab = -1;
-            static float sL = 0, sR = 0, sT = 0, sRpm[4] = {0, 0, 0, 0}, peak = 0;
-            static int ambientParticleTimer = 0;
-                                    static bool colorLUTInitialized = false;
-                                    if (!colorLUTInitialized) {
-                                        initColorLUT();
-                                        colorLUTInitialized = true;
-                                    }
+                                                                                                inline void drawUI() {
+                                                            static int lastTab = -1;
+                                                            static float sL = 0, sR = 0, sT = 0, sRpm[4] = {0, 0, 0, 0}, peak = 0;
+                                                                                    static bool colorLUTInitialized = false;
+                                                                                    if (!colorLUTInitialized) {
+                                                                                        initColorLUT();
+                                                                                        colorLUTInitialized = true;
+                                                                                    }
                                     Tel t;
                                     readTel(t);
                                     static int batteryAlertLevel = 0;
@@ -2208,25 +2167,15 @@ static inline void pageDebug(const Tel& t) {
 
                                     if (selectedTab == 6 && doomStarted) {
                                         int result = I_RunVexDoom(D_DoomFrame);
-                                        if (result != 0) handleDoomExit(result);
-                                        return;
-                                    }
+                                                                                if (result != 0) handleDoomExit(result);
+                                                                                return;
+                                                                            }
     
-                                    // Update ambient particles with delta time
-                                    updateParticles((int)deltaTime);
-                                    ambientParticleTimer += (int)deltaTime;
-                                                                        if (ambientParticleTimer > 8000 && particleCount < 5) {
-                                                                            // Rare ambient particles
-                                                                            spawnParticles(rand() % 480, rand() % 240, 1, cMuted, 0.1f, 0.4f, 1, 1, 4000);
-                                        ambientParticleTimer = 0;
-                                    }
-                                                                        // Driving particles - minimal
-                                                                        if (isDriving && (uiFrame % 30 == 0)) {
-                                                                            spawnParticles(171, 106, 1, cAccent, 0.2f, 0.6f, 1, 1, 300);
-                                    }
+                                                                            // Update particles with delta time
+                                                                            updateParticles((int)deltaTime);
             
-                                    // Update advanced effects
-                                    updateAdvancedEffects((int)deltaTime);
+                                                                            // Update advanced effects
+                                                                            updateAdvancedEffects((int)deltaTime);
             
                                     // Trigger velocity-based effects
                                     triggerVelocityEffects(t);
@@ -2930,15 +2879,11 @@ void triggerVelocityEffects(const Tel& t) {
 }
 
 void triggerThemeByPerformance(const Tel& t) {
-    // Auto-switch theme based on performance
-    if (t.bat <= 20 && currentTheme != THEME_FIRE) {
+    // Auto-switch theme based on critical performance only
+    if (t.bat <= 10 && currentTheme != THEME_FIRE) {
         triggerThemeChange(THEME_FIRE);
-    } else if (t.mTemp[t.hot] >= 60 && currentTheme != THEME_ICE) {
+    } else if (t.mTemp[t.hot] >= 70 && currentTheme != THEME_ICE) {
         triggerThemeChange(THEME_ICE);
-    } else if (t.online == 4 && t.bat > 50 && t.mTemp[t.hot] < 40 && currentTheme != THEME_GOLD) {
-        triggerThemeChange(THEME_GOLD);
-    } else if (t.online < 4 && currentTheme != THEME_FIRE) {
-        triggerThemeChange(THEME_FIRE);
     }
 }
 
