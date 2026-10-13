@@ -185,64 +185,41 @@ ThemeColors themePalettes[THEME_COUNT] = {
 int chromaticOffset = 0;
 bool chromaticEnabled = true;
 
-// Vignette strength
-// These overlays repaint existing pixels with the background color; keep them
-// disabled so they cannot erase the screen chrome or dashboard details.
+// Vignette strength - disabled to avoid erasing UI
 float vignetteStrength = 0.0f;
 
-// Scanline intensity
+// Scanline intensity - disabled
 float scanlineIntensity = 0.0f;
 
-// Bloom threshold
-int bloomThreshold = 200;
-
-// CRT curvature
+// CRT curvature - disabled
 float crtCurvature = 0.0f;
 
 // Glitch effect
 int glitchTimer = 0;
 int glitchIntensity = 0;
 
-// Post-processing pipeline
-bool postProcessEnabled = true;
-bool bloomEnabled = true;
-int bloomIterations = 3;
-float bloomIntensity = 0.5f;
-bool lensFlareEnabled = true;
-bool filmGrainEnabled = true;
-float filmGrainIntensity = 0.05f;
-bool chromaticAberrationEnabled = true;
-float chromaticAberrationStrength = 1.0f;
-bool vignetteEnabled = true;
-bool scanlinesEnabled = true;
-bool ditheringEnabled = true;
-
-// Advanced render targets (simulated with screen buffers)
-uint16_t bloomBuffer[480 * 240];
-uint16_t sceneBuffer[480 * 240];
-
-// Particle trail system
+// Simple particle trail system (minimal)
 struct ParticleTrail {
-    float x[16], y[16];
-    float vx[16], vy[16];
-    float life[16];
-    color colors[16];
+    float x[8], y[8];
+    float vx[8], vy[8];
+    float life[8];
+    color colors[8];
     int count;
     bool active;
 };
-ParticleTrail particleTrails[8];
+ParticleTrail particleTrails[4];
 int trailIndex = 0;
 
-// Ribbon particles for velocity trails
+// Ribbon particles for velocity trails (minimal)
 struct RibbonPoint {
     float x, y, width;
     color c;
     float life;
 };
-RibbonPoint ribbonPoints[64];
+RibbonPoint ribbonPoints[16];
 int ribbonCount = 0;
 
-// Shockwave rings
+// Shockwave rings (minimal)
 struct Shockwave {
     float x, y, radius, maxRadius;
     color c;
@@ -250,10 +227,10 @@ struct Shockwave {
     int thickness;
     bool active;
 };
-Shockwave shockwaves[16];
+Shockwave shockwaves[4];
 int shockwaveCount = 0;
 
-// Energy orbs
+// Energy orbs (minimal)
 struct EnergyOrb {
     float x, y, vx, vy;
     float radius, targetRadius;
@@ -261,243 +238,21 @@ struct EnergyOrb {
     float pulsePhase;
     bool active;
 };
-EnergyOrb energyOrbs[8];
+EnergyOrb energyOrbs[2];
 int orbCount = 0;
 
-// Hologram scanlines
+// Hologram scanlines - disabled by default
 bool hologramMode = false;
 int hologramPhase = 0;
-
-// Advanced holographic rendering
-struct HologramRenderer {
-    bool enabled;
-    float scanlineIntensity;
-    float flickerIntensity;
-    float chromaticAberration;
-    float glowIntensity;
-    float transparency;
-    color tintColor;
-    int renderMode; // 0=normal, 1=wireframe, 2=points, 3=scanlines
-    float noiseScale;
-    float noiseSpeed;
-};
-HologramRenderer hologramRenderer = {true, 0.3f, 0.1f, 0.5f, 0.8f, 0.9f, {0, 200, 255}, 3, 0.01f, 0.5f};
-
-// Vec3 for 3D math
-struct Vec3 {
-    float x, y, z;
-};
-
-// Volumetric holograms
-struct VolumetricHologram {
-    Vec3 position;
-    Vec3 size;
-    float density;
-    color color;
-    float animationPhase;
-    bool active;
-    int pattern; // 0=cube, 1=sphere, 2=pyramid, 3=torus, 4=custom
-};
-VolumetricHologram volumetricHolograms[16];
-int volumetricHologramCount = 0;
 
 // Color grading LUT
 uint32_t colorLUT[256];
 bool colorGradingEnabled = true;
 
-// Advanced color grading
-struct ColorGradingSettings {
-    bool enabled;
-    float contrast;
-    float saturation;
-    float brightness;
-    float gamma;
-    float temperature;
-    float tint;
-    float lift[3];
-    float gammaRGB[3];
-    float gain[3];
-    float shadows[3];
-    float midtones[3];
-    float highlights[3];
-    float vignetteAmount;
-    float vignetteMidpoint;
-    float vignetteRoundness;
-    float vignetteFeather;
-    bool filmGrainEnabled;
-    float filmGrainIntensity;
-    float filmGrainSize;
-    bool ditheringEnabled;
-    float ditheringStrength;
-};
-ColorGradingSettings colorGradingSettings = {true, 1.1f, 1.05f, 0.0f, 2.2f, 0.0f, 0.0f, {0,0,0}, {1,1,1}, {1,1,1}, {0,0,0}, {0,0,0}, {0,0,0}, 0.3f, 0.5f, 1.0f, 0.5f, true, 0.05f, 1.0f, true, 0.5f};
-
-// LUT textures
-uint32_t lut3D[16][16][16];
-bool lut3DEnabled = false;
-
 // Performance metrics
 int maxFrameTime = 0;
 int avgFrameTime = 0;
 int frameTimeSamples = 0;
-
-// Advanced performance monitoring
-struct PerformanceMonitor {
-    uint32_t frameTimes[120];
-    int frameTimeIndex;
-    uint32_t gpuTime;
-    uint32_t cpuTime;
-    uint32_t drawCalls;
-    uint32_t triangles;
-    uint32_t vertices;
-    uint32_t textureMemory;
-    uint32_t vertexMemory;
-    float fps;
-    float frameTimeMs;
-    float minFrameTime;
-    float maxFrameTime;
-    int frameCount;
-};
-PerformanceMonitor perfMonitor;
-
-struct MemoryTracker {
-    size_t allocated;
-    size_t peakAllocated;
-    size_t allocations;
-    size_t deallocations;
-    struct Allocation {
-        void* ptr;
-        size_t size;
-        const char* file;
-        int line;
-    } allocations_list[256];
-    int allocationCount;
-};
-MemoryTracker memoryTracker;
-
-// Frame graph for profiling
-struct FrameGraph {
-    struct Node {
-        char name[32];
-        uint32_t startTime;
-        uint32_t endTime;
-        int parent;
-        int children[8];
-        int childCount;
-        color graphColor;
-    } nodes[64];
-    int nodeCount;
-    int currentNode;
-    uint32_t frameStart;
-};
-FrameGraph frameGraph;
-
-// Audio visualization (simulated)
-struct AudioBar {
-    float height, targetHeight, velocity;
-    color c;
-    float pulsePhase;
-};
-AudioBar audioBars[32];
-int audioBarCount = 32;
-bool audioVizEnabled = true;
-
-// Advanced audio system
-struct AudioSource {
-    Vec3 position;
-    float volume;
-    float pitch;
-    float radius;
-    bool looping;
-    bool playing;
-    int soundId;
-    float fadeIn;
-    float fadeOut;
-};
-AudioSource audioSources[16];
-int audioSourceCount = 0;
-
-struct AudioListener {
-    Vec3 position;
-    Vec3 forward;
-    Vec3 up;
-    float volume;
-};
-AudioListener audioListener;
-
-struct AudioReverbZone {
-    Vec3 position;
-    float radius;
-    float density;
-    float diffusion;
-    float gain;
-    float gainHF;
-    float decayTime;
-    float decayHFRatio;
-    float reflectionsGain;
-    float reflectionsDelay;
-    float lateReverbGain;
-    float lateReverbDelay;
-    bool active;
-};
-AudioReverbZone audioReverbZones[8];
-int audioReverbZoneCount = 0;
-
-// 3D perspective system
-struct Mat4 { float m[16]; };
-Mat4 viewMatrix, projMatrix;
-float cameraYaw = 0, cameraPitch = 0, cameraDist = 300;
-bool perspective3DEnabled = true;
-
-// Advanced 3D rendering system
-struct Mesh3D {
-    Vec3* vertices;
-    int* indices;
-    int vertexCount;
-    int indexCount;
-    Vec3 position;
-    Vec3 rotation;
-    Vec3 scale;
-    color wireColor;
-    color fillColor;
-    bool wireframe;
-    bool visible;
-};
-Mesh3D meshes3D[16];
-int mesh3DCount = 0;
-
-struct Camera3D {
-    Vec3 position;
-    Vec3 target;
-    Vec3 up;
-    float fov;
-    float nearPlane;
-    float farPlane;
-    float aspect;
-    Mat4 viewMatrix;
-    Mat4 projMatrix;
-    bool orthographic;
-    float orthoSize;
-};
-Camera3D camera3D;
-
-struct Light3D {
-    Vec3 position;
-    Vec3 direction;
-    color color;
-    float intensity;
-    float range;
-    float innerAngle;
-    float outerAngle;
-    int type; // 0=point, 1=directional, 2=spot
-    bool enabled;
-    bool castShadows;
-};
-Light3D lights3D[8];
-int light3DCount = 0;
-
-// Volumetric lighting
-struct LightShaft {
     Vec3 start;
     Vec3 end;
     color color;
@@ -3123,7 +2878,7 @@ void drawHologramScanlines() {
     }
 }
 
-// Update all advanced effects
+// Update all advanced effects - simplified
 void updateAdvancedEffects(int dt) {
     updateThemeTransition();
     updateGlitch();
@@ -3133,27 +2888,6 @@ void updateAdvancedEffects(int dt) {
     updateEnergyOrbs(dt);
     hologramPhase = (hologramPhase + 1) % 240;
     
-    // Update profiler
-    if (profilerEnabled) {
-        profilerFrame++;
-    }
-    
-    // Update easter eggs
-    if (easterEggTimer > 0) {
-        easterEggTimer -= dt;
-        if (easterEggTimer <= 0) {
-            activeEasterEgg = EGG_NONE;
-        }
-    }
-    
-    // Update hologram elements
-    for (int i = 0; i < hologramCount; ++i) {
-        HologramElement& h = hologramElements[i];
-        if (!h.active) continue;
-        h.pulsePhase += dt * 0.005f;
-        h.rotation += dt * 0.0005f;
-    }
-    
     // Update notifications
     for (int i = 0; i < notificationCount; ++i) {
         Notification& n = notifications[i];
@@ -3161,17 +2895,6 @@ void updateAdvancedEffects(int dt) {
         n.life -= dt;
         n.y += (n.targetY - n.y) * 0.1f;
         if (n.life <= 0) n.active = false;
-    }
-    
-    // Update floating numbers
-    for (int i = 0; i < floatingNumberCount; ++i) {
-        FloatingNumber& fn = floatingNumbers[i];
-        if (!fn.active) continue;
-        fn.y += fn.vy * dt * 0.001f;
-        fn.vy -= 0.05f * dt * 0.001f; // gravity
-        fn.scale += fn.scaleVel * dt * 0.001f;
-        fn.life -= dt;
-        if (fn.life <= 0) fn.active = false;
     }
     
     // Update achievements
@@ -3183,88 +2906,11 @@ void updateAdvancedEffects(int dt) {
             if (a.displayProgress > 1.0f) a.displayProgress = 1.0f;
         }
     }
-    
-    // Update combo system
-    if (comboTimer > 0) {
-        comboTimer -= dt;
-        if (comboTimer <= 0) {
-            comboCount = 0;
-        }
-    }
-    
-    // Update time dilation
-    timeScaleVel += (timeScaleTarget - timeScale) * 0.1f;
-    timeScale += timeScaleVel * dt * 0.001f;
-    timeScaleVel *= 0.9f;
-    timeScale = clampInt(timeScale * 1000, 100, 3000) / 1000.0f;
-    
-    // Update parallax layers
-    for (int i = 0; i < 5; ++i) {
-        ParallaxLayer& p = parallaxLayers[i];
-        p.x += p.speedX * dt * 0.001f;
-        p.y += p.speedY * dt * 0.001f;
-        if (p.x > 480) p.x -= 480;
-        if (p.x < -480) p.x += 480;
-        if (p.y > 240) p.y -= 240;
-        if (p.y < -240) p.y += 240;
-    }
-    
-    // Update procedural background
-    for (int i = 0; i < bgElementCount; ++i) {
-        BGElement& b = bgElements[i];
-        if (!b.active) continue;
-        b.x += b.vx * dt * 0.001f;
-        b.y += b.vy * dt * 0.001f;
-        b.rotation += b.rotSpeed * dt * 0.001f;
-        if (b.x < -50 || b.x > 530 || b.y < -50 || b.y > 290) {
-            b.active = false;
-        }
-    }
-    
-    // Update input visualization
-    inputViz.lx = Controller1.Axis4.position(pct) / 100.0f;
-    inputViz.ly = Controller1.Axis3.position(pct) / 100.0f;
-    inputViz.rx = Controller1.Axis1.position(pct) / 100.0f;
-    inputViz.ry = Controller1.Axis2.position(pct) / 100.0f;
-    for (int i = 0; i < 12; ++i) {
-        bool pressed = false;
-        switch(i) {
-            case 0: pressed = Controller1.ButtonL1.pressing(); break;
-            case 1: pressed = Controller1.ButtonL2.pressing(); break;
-            case 2: pressed = Controller1.ButtonR1.pressing(); break;
-            case 3: pressed = Controller1.ButtonR2.pressing(); break;
-            case 4: pressed = Controller1.ButtonA.pressing(); break;
-            case 5: pressed = Controller1.ButtonB.pressing(); break;
-            case 6: pressed = Controller1.ButtonX.pressing(); break;
-            case 7: pressed = Controller1.ButtonY.pressing(); break;
-            case 8: pressed = Controller1.ButtonUp.pressing(); break;
-            case 9: pressed = Controller1.ButtonDown.pressing(); break;
-            case 10: pressed = Controller1.ButtonLeft.pressing(); break;
-            case 11: pressed = Controller1.ButtonRight.pressing(); break;
-        }
-        inputViz.buttons[i] = pressed;
-        if (pressed) {
-            inputViz.pressAnim[i] = 1.0f;
-        } else {
-            inputViz.pressAnim[i] *= 0.9f;
-        }
-    }
-    
-    // Update drift combo
-    if (isDrifting) {
-        driftCombo++;
-        if (driftCombo > maxCombo) maxCombo = driftCombo;
-    } else {
-        driftCombo = 0;
-    }
 }
 
-// Draw all advanced effects
+// Draw all advanced effects - simplified
 void drawAdvancedEffects() {
-    // The Brain screen API draws directly into the visible buffer, so these
-    // faux post-process overlays erase the UI instead of blending with it.
-    // Keep decorative effects that draw only their own pixels.
-    if (hologramMode) drawHologramScanlines();
+    // Only draw effects that don't erase the UI
     drawParticleTrails();
     drawRibbons();
     drawShockwaves();
@@ -3274,20 +2920,12 @@ void drawAdvancedEffects() {
     if (radialMenuOpen) drawRadialMenu();
 }
 
-// Trigger effects based on game events
+// Trigger effects based on game events - minimal
 void triggerVelocityEffects(const Tel& t) {
     float speed = sqrtf(t.sLeft * t.sLeft + t.sRight * t.sRight) / 100.0f;
-    if (speed > 0.7f) {
-        // High speed - spawn ribbons
-        spawnRibbon(171, 106, speed * 20, cCyan);
-        if (rand() % 10 == 0) {
-            spawnShockwave(171, 106, 50, cCyan, 2, 200);
-        }
-    }
-    if (speed > 0.9f) {
-        spawnEnergyOrb(171 + (rand() % 40 - 20), 106 + (rand() % 40 - 20), 
-                       (rand() % 200 - 100) * 0.1f, (rand() % 200 - 100) * 0.1f,
-                       15, cGold);
+    if (speed > 0.8f) {
+        // High speed - subtle ribbon
+        spawnRibbon(171, 106, speed * 10, cAccent);
     }
 }
 
