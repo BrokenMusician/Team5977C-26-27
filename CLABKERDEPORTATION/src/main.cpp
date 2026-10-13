@@ -2412,15 +2412,11 @@ static inline void pageDebug(const Tel& t) {
                         }
 
                         // ============================================================================
-                                                // Doom page is defined below the UI loop.
-                                                static inline void pageDoom(const Tel& t);
-                                                // Motor config page is defined below the UI loop.
-                                                static inline void pageMotorConfig(const Tel& t);
 
-                        // MAIN UI RENDER LOOP - Ultra-smooth 60fps target
-                        // ============================================================================
+                                                // MAIN UI RENDER LOOP - Ultra-smooth 60fps target
+                                                // ============================================================================
 
-                        inline void drawUI() {
+                                                inline void drawUI() {
             static int lastTab = -1;
             static float sL = 0, sR = 0, sT = 0, sRpm[4] = {0, 0, 0, 0}, peak = 0;
             static int ambientParticleTimer = 0;
@@ -4427,11 +4423,236 @@ void initializeDrive() {
         unlockAchievement("VOID WALKER", "Stared into the abyss", cDanger);
         unlockAchievement("GLITCH MASTER", "Corrupted the system", cWarn);
         unlockAchievement("NEON DREAMER", "Chased electric sheep", cCyan);
-    
-        bootAnimation();
         }
 
-                int main() {
+        // ============================================================================
+        // EXTRACTED FUNCTIONS FROM drawUI
+        // ============================================================================
+
+        /* ---------------------------------- DOOM page --------------------------------- */
+        void pageDoom(const Tel& t) {
+            (void)t;
+            gCard(76, 32, 398, 200, "DOOM // V5 PORT");
+            if (doomUnavailable) {
+                Brain.Screen.setFont(prop30);
+                gTextC(275, 92, 17, cDanger, "DOOM STOPPED");
+                Brain.Screen.setFont(mono12);
+                gTextC(275, 126, 7, cText, "%.48s", doomExitMessage);
+                gTextC(275, 154, 7, cMuted, "RESTART THE PROGRAM TO PLAY AGAIN");
+                return;
+            }
+            Brain.Screen.setFont(prop30);
+            gTextC(275, 94, 17, cAccent, "DOOM");
+            Brain.Screen.setFont(mono12);
+            gTextC(275, 114, 8, doomStarted ? cGood : cWarn,
+                   doomStarted ? "GAME READY" : "V5 ENGINE PORT");
+            gLine(92, 124, 458, 124, cLine);
+            if (doomStarted) {
+                gTextC(275, 150, 8, cText, "TAP A TAB TO PAUSE AND RETURN");
+                gTextC(275, 175, 8, cMuted, "Touch DOOM again to resume.");
+            } else {
+                gTextC(275, 145, 8, cMuted, "Use the controller to play.");
+                bool startBlocked = !Brain.SDcard.isInserted();
+                gRect(185, 165, 180, 42, startBlocked ? cLine : cGood);
+                gBox(185, 165, 180, 42, startBlocked ? cMuted : cText);
+                gTextC(275, 192, 8, startBlocked ? cText : cBg, "START DOOM");
+                gTextC(275, 218, 7, cMuted, "DRIVE MOTORS PAUSE IN DOOM");
+                gTextC(275, 230, 7, doomWadMissing ? cDanger : cMuted,
+                       doomWadMissing ? "CANNOT OPEN: doom1.wad" :
+                       Brain.SDcard.isInserted() ? "SD ROOT: doom1.wad" : "INSERT MICROSD WITH WAD");
+            }
+        }
+
+        /* ---------------------------------- touch --------------------------------- */
+        void handleScreenTouch() {
+            static bool wasTouching = false;
+            static int touchStartTime = 0;
+            bool touching = Brain.Screen.pressing();
+            if (touching && !wasTouching) {
+                touchStartTime = Brain.Timer.time(msec);
+                int tx = Brain.Screen.xPosition();
+                int ty = Brain.Screen.yPosition();
+                if (radialMenuOpen) {
+                    // Check if tapping on a radial menu item
+                    int cx = 240, cy = 120;
+                    float radius = 80 * radialMenuProgress;
+                    for (int i = 0; i < radialMenuCount; ++i) {
+                        RadialMenuItem& item = radialMenuItems[i];
+                        float angle = item.angle - 3.14159f / 2;
+                        int ix = cx + (int)(radius * cosf(angle));
+                        int iy = cy + (int)(radius * sinf(angle));
+                        int dx = tx - ix;
+                        int dy = ty - iy;
+                        if (dx * dx + dy * dy <= 225) { // 15px radius
+                            if (item.enabled) {
+                                handleRadialMenuAction(i);
+                            }
+                            break;
+                        }
+                    }
+                    closeRadialMenu();
+                } else if (tx < kSideW && ty >= kTabTop) {
+                    int idx = (ty - kTabTop) / kTabH;
+                    if (idx >= 0 && idx < 8) selectedTab = idx;  // Support all 8 tabs
+                } else if (selectedTab == 6 && !doomStarted && !doomUnavailable &&
+                           tx >= 185 && tx <= 365 && ty >= 165 && ty <= 207) {
+                    doomStartRequested = true;
+                } else if (selectedTab == 3 && ty >= 188 && ty <= 226) {
+                    if (tx >= 320 && tx <= 356 && driveDeadbandPct > 0) --driveDeadbandPct;
+                    else if (tx >= 430 && tx <= 466 && driveDeadbandPct < 25) ++driveDeadbandPct;
+                }
+                wasTouching = touching;
+            } else if (!touching && wasTouching) {
+                // Touch released - check for long press to open radial menu
+                int touchDuration = Brain.Timer.time(msec) - touchStartTime;
+                if (touchDuration > 500) {
+                    openRadialMenu();
+                }
+                wasTouching = false;
+            }
+        }
+
+        /* ---------------------------------- MOTOR CONFIG page --------------------------------- */
+        void pageMotorConfig(const Tel& t) {
+            (void)t;
+            gCard(76, 32, 398, 200, "MOTOR CONFIGURATION // HOT-SWAP");
+
+            // Header
+            Brain.Screen.setFont(prop20);
+            gTextC(275, 50, 12, cAccent, "MOTOR PORT CONFIG");
+            Brain.Screen.setFont(mono12);
+            gTextC(275, 70, 8, cMuted, "Tap a motor to edit. Restart required for changes.");
+
+            // Motor list
+            for (int i = 0; i < 4; ++i) {
+                int y = 90 + i * 30;
+                bool sel = i == motorConfigSelected;
+                color bg = sel ? cAccent : cPanel;
+                color border = sel ? cText : cLine;
+                color text = sel ? cBg : cText;
+
+                gRect(84, y, 312, 26, bg);
+                gBox(84, y, 312, 26, border);
+
+                // Motor name and port
+                char buf[64];
+                const char* ratioStr = motorConfigs[i].ratio == 0 ? "18:1" : motorConfigs[i].ratio == 1 ? "36:1" : "6:1";
+                snprintf(buf, sizeof(buf), "%s  |  PORT %d  |  %s  |  %s  |  %s",
+                         motorConfigs[i].name,
+                         motorConfigs[i].port,
+                         ratioStr,
+                         motorConfigs[i].reversed ? "REV" : "FWD",
+                         motorConfigs[i].enabled ? "ON" : "OFF");
+                gText(90, y + 18, text, "%s", buf);
+
+                // Selection indicator
+                if (sel) {
+                    gText(370, y + 18, cAccent2, ">");
+                }
+            }
+
+            // Instructions
+            gTextC(275, 220, 7, cMuted, "UP/DOWN: SELECT  |  LEFT/RIGHT: EDIT FIELD  |  A: TOGGLE  |  X: APPLY (RESTART)");
+
+            // Handle touch input for motor config
+            if (Brain.Screen.pressing()) {
+                int tx = Brain.Screen.xPosition();
+                int ty = Brain.Screen.yPosition();
+
+                // Check if tapping on a motor row
+                for (int i = 0; i < 4; ++i) {
+                    int y = 90 + i * 30;
+                    if (tx >= 84 && tx <= 396 && ty >= y && ty <= y + 26) {
+                        motorConfigSelected = i;
+                        motorConfigEditing = true;
+                        motorConfigEditField = 0;
+                        break;
+                    }
+                }
+            }
+
+            // Handle controller input for editing
+            static bool lastUp = false, lastDown = false, lastLeft = false, lastRight = false, lastA = false, lastX = false;
+            bool up = Controller1.ButtonUp.pressing();
+            bool down = Controller1.ButtonDown.pressing();
+            bool left = Controller1.ButtonLeft.pressing();
+            bool right = Controller1.ButtonRight.pressing();
+            bool aBtn = Controller1.ButtonA.pressing();
+            bool xBtn = Controller1.ButtonX.pressing();
+
+            if (up && !lastUp) {
+                motorConfigSelected = (motorConfigSelected + 3) % 4;
+            }
+            if (down && !lastDown) {
+                motorConfigSelected = (motorConfigSelected + 1) % 4;
+            }
+            if (left && !lastLeft && motorConfigEditing) {
+                motorConfigEditField = (motorConfigEditField + 3) % 4;
+            }
+            if (right && !lastRight && motorConfigEditing) {
+                motorConfigEditField = (motorConfigEditField + 1) % 4;
+            }
+            if (aBtn && !lastA && motorConfigEditing) {
+                MotorConfig& mc = motorConfigs[motorConfigSelected];
+                switch (motorConfigEditField) {
+                    case 0: // Port
+                        mc.port = (mc.port % 21) + 1;
+                        break;
+                    case 1: // Reversed
+                        mc.reversed = !mc.reversed;
+                        break;
+                    case 2: // Ratio
+                        mc.ratio = (mc.ratio + 1) % 3;
+                        break;
+                    case 3: // Enabled
+                        mc.enabled = !mc.enabled;
+                        break;
+                }
+            }
+            if (xBtn && !lastX) {
+                // Apply configuration - would require restart
+                reconfigureMotors();
+            }
+
+            lastUp = up;
+            lastDown = down;
+            lastLeft = left;
+            lastRight = right;
+            lastA = aBtn;
+            lastX = xBtn;
+        }
+
+        // Trigger effects based on game events
+        void triggerVelocityEffects(const Tel& t) {
+            float speed = sqrtf(t.sLeft * t.sLeft + t.sRight * t.sRight) / 100.0f;
+            if (speed > 0.7f) {
+                // High speed - spawn ribbons
+                spawnRibbon(171, 106, speed * 20, cCyan);
+                if (rand() % 10 == 0) {
+                    spawnShockwave(171, 106, 50, cCyan, 2, 200);
+                }
+            }
+            if (speed > 0.9f) {
+                spawnEnergyOrb(171 + (rand() % 40 - 20), 106 + (rand() % 40 - 20), 
+                               (rand() % 200 - 100) * 0.1f, (rand() % 200 - 100) * 0.1f,
+                               15, cGold);
+            }
+        }
+
+        void triggerThemeByPerformance(const Tel& t) {
+            // Auto-switch theme based on performance
+            if (t.bat <= 20 && currentTheme != THEME_FIRE) {
+                triggerThemeChange(THEME_FIRE);
+            } else if (t.mTemp[t.hot] >= 60 && currentTheme != THEME_ICE) {
+                triggerThemeChange(THEME_ICE);
+            } else if (t.online == 4 && t.bat > 50 && t.mTemp[t.hot] < 40 && currentTheme != THEME_GOLD) {
+                triggerThemeChange(THEME_GOLD);
+            } else if (t.online < 4 && currentTheme != THEME_FIRE) {
+                triggerThemeChange(THEME_FIRE);
+            }
+        }
+
+        int main() {
     competition::bStopTasksBetweenModes = true;
     srand((unsigned int)Brain.Timer.time(msec)); // Seed RNG for particle effects
     initializeDrive();
