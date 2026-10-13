@@ -1,25 +1,22 @@
 {
 	"env": {
-		"vex_compilerPath": "${config:vexrobotics.vexcode.Cpp.Toolchain.Path}\\clang\\bin\\clang.exe",
-		"vex_sdkPath": "${config:vexrobotics.vexcode.Cpp.Sdk.Home}\\V5\\V5_20240802_15_00_00\\vexv5",
-		"vex_gcc": "${vex_sdkPath}/gcc/include/c++/4.9.3",
-		"vex_sdkIncludes": [
-			"${vex_sdkPath}/clang/8.0.0/include/**",
-			"${vex_gcc}/**",
-			"${vex_gcc}/arm-none-eabi/thumb",
-			"${vex_sdkPath}/gcc/include",
-			"${vex_sdkPath}/include/**",
-			"${workspaceFolder}/include/**",
-			"${workspaceFolder}/src/**"
-		]
+		"VEX_TOOLCHAIN": "C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_win32",
+		"VEX_SDK": "C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5",
+		"VEX_GCC_INCLUDE": "${VEX_SDK}/gcc/include/c++/4.9.3"
 	},
 	"configurations": [
 		{
 			"name": "VEX V5",
 			"includePath": [
-				"${vex_sdkIncludes}"
+				"${VEX_SDK}/clang/8.0.0/include/**",
+				"${VEX_GCC_INCLUDE}/**",
+				"${VEX_GCC_INCLUDE}/arm-none-eabi/thumb",
+				"${VEX_SDK}/gcc/include",
+				"${VEX_SDK}/include/**",
+				"${workspaceFolder}/include/**",
+				"${workspaceFolder}/src/**"
 			],
-			"compilerPath": "${vex_compilerPath}",
+			"compilerPath": "${VEX_TOOLCHAIN}/clang/bin/clang.exe",
 			"cStandard": "gnu99",
 			"cppStandard": "gnu++11",
 			"intelliSenseMode": "windows-clang-arm",
@@ -57,13 +54,7 @@
 				"__STDC_UTF_16__=1",
 				"__STDC_UTF_32__=1",
 				"__STDC_VERSION__=201112L",
-				"__cplusplus=201103L",
-				"__builtin_powf=1",
-				"__builtin_sinf=1",
-				"__builtin_cosf=1",
-				"__builtin_sin=1",
-				"__builtin_cos=1",
-				"__builtin_abs=1"
+				"__cplusplus=201103L"
 			],
 			"compilerArgs": [
 				"-target",
@@ -83,10 +74,10 @@
 				"-Werror=return-type"
 			],
 			"forcedInclude": [
-				"${vex_sdkPath}/gcc/include/math.h",
-				"${vex_sdkPath}/gcc/include/stdlib.h",
-				"${vex_sdkPath}/clang/8.0.0/include/stddef.h",
-				"${vex_sdkPath}/clang/8.0.0/include/stdint.h"
+				"${VEX_SDK}/gcc/include/math.h",
+				"${VEX_SDK}/gcc/include/stdlib.h",
+				"${VEX_SDK}/clang/8.0.0/include/stddef.h",
+				"${VEX_SDK}/clang/8.0.0/include/stdint.h"
 			]
 		}
 	],

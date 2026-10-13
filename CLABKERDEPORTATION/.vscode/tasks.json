@@ -4,7 +4,7 @@
 		{
 			"label": "VEX: Build Project",
 			"type": "shell",
-			"command": "make",
+			"command": "C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_win32/tools/bin/make.exe",
 			"args": [
 				"VERBOSE=1"
 			],
@@ -20,7 +20,7 @@
 		{
 			"label": "VEX: Clean Project",
 			"type": "shell",
-			"command": "make",
+			"command": "C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_win32/tools/bin/make.exe",
 			"args": [
 				"clean"
 			],

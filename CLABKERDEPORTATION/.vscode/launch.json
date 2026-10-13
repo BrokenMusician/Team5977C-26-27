@@ -1,0 +1,22 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "VEX V5 Debug (Cortex Debug)",
+			"type": "cortex-debug",
+			"request": "launch",
+			"servertype": "openocd",
+			"device": "STM32F407VG",
+			"configFiles": [
+				"interface/stlink.cfg",
+				"target/stm32f4x.cfg"
+			],
+			"executable": "${workspaceFolder}/build/CLABKERDEPORTATION.elf",
+			"cwd": "${workspaceFolder}",
+			"armToolchainPath": "C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_win32/gcc/bin",
+			"preLaunchTask": "VEX: Build Project",
+			"runToEntryPoint": "main",
+			"showDevDebugOutput": "raw"
+		}
+	]
+}
