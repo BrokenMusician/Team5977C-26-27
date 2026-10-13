@@ -1,22 +1,17 @@
 {
-	"env": {
-		"VEX_TOOLCHAIN": "C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_win32",
-		"VEX_SDK": "C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5",
-		"VEX_GCC_INCLUDE": "${VEX_SDK}/gcc/include/c++/4.9.3"
-	},
 	"configurations": [
 		{
 			"name": "VEX V5",
 			"includePath": [
-				"${VEX_SDK}/clang/8.0.0/include/**",
-				"${VEX_GCC_INCLUDE}/**",
-				"${VEX_GCC_INCLUDE}/arm-none-eabi/thumb",
-				"${VEX_SDK}/gcc/include",
-				"${VEX_SDK}/include/**",
+				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/clang/8.0.0/include/**",
+				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include/c++/4.9.3/**",
+				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include/c++/4.9.3/arm-none-eabi/thumb",
+				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include",
+				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/include/**",
 				"${workspaceFolder}/include/**",
 				"${workspaceFolder}/src/**"
 			],
-			"compilerPath": "${VEX_TOOLCHAIN}/clang/bin/clang.exe",
+			"compilerPath": "C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_win32/clang/bin/clang.exe",
 			"cStandard": "gnu99",
 			"cppStandard": "gnu++11",
 			"intelliSenseMode": "windows-clang-arm",
@@ -74,10 +69,10 @@
 				"-Werror=return-type"
 			],
 			"forcedInclude": [
-				"${VEX_SDK}/gcc/include/math.h",
-				"${VEX_SDK}/gcc/include/stdlib.h",
-				"${VEX_SDK}/clang/8.0.0/include/stddef.h",
-				"${VEX_SDK}/clang/8.0.0/include/stdint.h"
+				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include/math.h",
+				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include/stdlib.h",
+				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/clang/8.0.0/include/stddef.h",
+				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/clang/8.0.0/include/stdint.h"
 			]
 		}
 	],
