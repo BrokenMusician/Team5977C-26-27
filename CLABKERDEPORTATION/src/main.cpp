@@ -201,6 +201,7 @@ void updateAdvancedEffects(int dt);
 void drawAdvancedEffects();
 void pageDoom(const Tel& t);
 void pageMotorConfig(const Tel& t);
+void pageCompete(const Tel& t);
 void triggerVelocityEffects(const Tel& t);
 void triggerThemeByPerformance(const Tel& t);
 
@@ -2151,9 +2152,10 @@ static inline void pageDebug(const Tel& t) {
                                                                             case 4: pageSystem(t); break;
                                                                             case 5: pageDebug(t); break;
                                                                             case 6: pageDoom(t); break;
-                                                                                                                                                        case 7: pageMotorConfig(t); break;
-                                                                                                                                                        default: pageSystem(t); break;
-                                                                        }
+                                                                                                                                                    case 7: pageMotorConfig(t); break;
+                                                                                                                                                    case 8: pageCompete(t); break;
+                                                                                                                                                    default: pageSystem(t); break;
+                                                                                                                                                }
 
                                                                         // Draw ambient particles on top
                                                                         drawParticles();
@@ -3960,7 +3962,72 @@ void initializeDrive() {
                 reconfigureMotors();
             }
 
-            lastUp = up; lastDown = down; lastLeft = left; lastRight = right; lastA = aBtn; lastX = xBtn; } int main() {
+            lastUp = up; lastDown = down; lastLeft = left; lastRight = right; lastA = aBtn; lastX = xBtn; }
+
+/* ---------------------------------- COMPETE page --------------------------------- */
+void pageCompete(const Tel& t) {
+    (void)t;
+    gCard(76, 32, 398, 200, "COMPETITION // 5977C");
+
+    // Header
+    Brain.Screen.setFont(prop20);
+    gTextC(275, 50, 12, cAccent, "COMPETITION TOOLS");
+    Brain.Screen.setFont(mono12);
+
+    // Lap timer
+    gRect(84, 70, 312, 50, cPanel);
+    gBox(84, 70, 312, 50, cLine);
+    gTextC(275, 82, 8, cText, "LAP TIMER");
+    if (lapTimer.active) {
+        uint32_t elapsed = Brain.Timer.time(msec) - lapTimer.startTime;
+        int min = elapsed / 60000;
+        int sec = (elapsed % 60000) / 1000;
+        int ms = elapsed % 1000;
+        gTextC(275, 102, 12, cAccent, "%02d:%02d.%03d", min, sec, ms);
+        gTextC(275, 116, 7, cMuted, "LAPS: %d  BEST: %02d:%02d.%03d",
+               lapTimer.lapCount,
+               lapTimer.bestLap == UINT32_MAX ? 0 : lapTimer.bestLap / 60000,
+               lapTimer.bestLap == UINT32_MAX ? 0 : (lapTimer.bestLap % 60000) / 1000,
+               lapTimer.bestLap == UINT32_MAX ? 0 : lapTimer.bestLap % 1000);
+    } else {
+        gTextC(275, 102, 12, cMuted, "--:--.---");
+        gTextC(275, 116, 7, cMuted, "PRESS A TO START");
+    }
+
+    // Battery health
+    gRect(84, 125, 150, 50, cPanel);
+    gBox(84, 125, 150, 50, cLine);
+    gTextC(159, 137, 8, cText, "BATTERY");
+    gTextC(159, 152, 10, batteryHealth.healthPercent > 80 ? cGood : batteryHealth.healthPercent > 50 ? cWarn : cDanger,
+           "%.0f%%", batteryHealth.healthPercent);
+    gTextC(159, 165, 7, cMuted, "CYCLES: %d", batteryHealth.cycleCount);
+
+    // Motor temps trend
+    gRect(246, 125, 150, 50, cPanel);
+    gBox(246, 125, 150, 50, cLine);
+    gTextC(321, 137, 8, cText, "MOTOR TEMPS");
+    int maxTemp = 0;
+    for (int i = 0; i < 4; ++i) maxTemp = (maxTemp > t.mTemp[i]) ? maxTemp : t.mTemp[i];
+    gTextC(321, 152, 10, maxTemp > 60 ? cDanger : maxTemp > 40 ? cWarn : cGood, "%dC", maxTemp);
+    gTextC(321, 165, 7, cMuted, "AVG: %dC", (t.mTemp[0] + t.mTemp[1] + t.mTemp[2] + t.mTemp[3]) / 4);
+
+    // Autonomous selector
+    gRect(84, 180, 312, 30, cPanel);
+    gBox(84, 180, 312, 30, cLine);
+    gTextC(275, 192, 8, cText, "AUTON: %s", autonNames[selectedAuton]);
+    gTextC(275, 205, 7, cMuted, "LEFT/RIGHT TO CHANGE");
+
+    // DOOM stats
+    gRect(84, 215, 312, 20, cPanel);
+    gBox(84, 215, 312, 20, cLine);
+    gTextC(275, 227, 7, cMuted, "DOOM: %d GAMES  HIGH: %d  KILLS: %d",
+           doomStats.gamesPlayed, doomStats.highScore, doomStats.totalKills);
+
+    // Controls hint
+    gTextC(275, 235, 7, cMuted, "A: LAP  B: RESET  X: AUTON  Y: PIT  UP/DN: QUICK STATS");
+}
+
+int main() {
     competition::bStopTasksBetweenModes = true;
     srand((unsigned int)Brain.Timer.time(msec)); // Seed RNG for particle effects
     initializeDrive();
@@ -3982,12 +4049,57 @@ void initializeDrive() {
         }
         wasEnabled = enabled;
 
-        handleScreenTouch();
-        if (enabled) outroVisible = false;
-        if (!outroVisible) {
-            drawUI();  // drawUI() now handles its own adaptive rate limiting
+                // Competition features update
+                uint32_t now = Brain.Timer.time(msec);
+
+                // Lap timer
+                static bool lastA = false, lastB = false, lastX = false, lastY = false, lastUp = false, lastDown = false;
+                bool aBtn = Controller1.ButtonA.pressing();
+                bool bBtn = Controller1.ButtonB.pressing();
+                bool xBtn = Controller1.ButtonX.pressing();
+                bool yBtn = Controller1.ButtonY.pressing();
+                bool upBtn = Controller1.ButtonUp.pressing();
+                bool downBtn = Controller1.ButtonDown.pressing();
+
+                if (aBtn && !lastA && selectedTab == 8) {
+                    if (!lapTimer.active) {
+                        lapTimer.active = true;
+                        lapTimer.startTime = now;
+                    } else {
+                        uint32_t lapTime = now - lapTimer.lastLapTime;
+                        if (lapTimer.lapCount == 0) lapTime = now - lapTimer.startTime;
+                        lapTimer.lapTimes[lapTimer.lapTimeCount++] = lapTime;
+                        if (lapTime < lapTimer.bestLap) lapTimer.bestLap = lapTime;
+                        lapTimer.lastLapTime = now;
+                        lapTimer.lapCount++;
+                    }
+                }
+                if (bBtn && !lastB && selectedTab == 8) {
+                    lapTimer = {}; // Reset
+                }
+                if (xBtn && !lastX && selectedTab == 8) {
+                    selectedAuton = (selectedAuton + 1) % 8;
+                }
+                if (yBtn && !lastY) {
+                    pitMode = !pitMode;
+                    pitModeTimer = now;
+                }
+                if (upBtn && !lastUp) {
+                    showQuickStats = true;
+                    quickStatsTimer = now;
+                }
+                if (downBtn && !lastDown) {
+                    showQuickStats = false;
+                }
+
+                lastA = aBtn; lastB = bBtn; lastX = xBtn; lastY = yBtn; lastUp = upBtn; lastDown = downBtn;
+
+                                handleScreenTouch();
+                if (enabled) outroVisible = false;
+                if (!outroVisible) {
+                    drawUI();  // drawUI() now handles its own adaptive rate limiting
+                }
+                this_thread::sleep_for(5);
+            }
         }
-        this_thread::sleep_for(5);
-    }
-}
 
