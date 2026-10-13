@@ -4354,12 +4354,7 @@ void initializeDrive() {
         unlockAchievement("NEON DREAMER", "Chased electric sheep", cCyan);
         }
 
-        // ============================================================================
-        // EXTRACTED FUNCTIONS FROM drawUI
-        // ============================================================================
-
-        /* ---------------------------------- DOOM page --------------------------------- */
-        void pageDoom(const Tel& t) {
+        void initializeDrive() {
             (void)t;
             gCard(76, 32, 398, 200, "DOOM // V5 PORT");
             if (doomUnavailable) {
@@ -4390,10 +4385,10 @@ void initializeDrive() {
                        doomWadMissing ? "CANNOT OPEN: doom1.wad" :
                        Brain.SDcard.isInserted() ? "SD ROOT: doom1.wad" : "INSERT MICROSD WITH WAD");
             }
-        }
+                       }
 
-        /* ---------------------------------- touch --------------------------------- */
-        void handleScreenTouch() {
+                       /* ---------------------------------- touch --------------------------------- */
+                       void handleScreenTouch() {
             static bool wasTouching = false;
             static int touchStartTime = 0;
             bool touching = Brain.Screen.pressing();
@@ -4438,13 +4433,8 @@ void initializeDrive() {
                     openRadialMenu();
                 }
                 wasTouching = false;
-            }
-        }
-
-        /* ---------------------------------- MOTOR CONFIG page --------------------------------- */
-        void pageMotorConfig(const Tel& t) {
-            (void)t;
-            gCard(76, 32, 398, 200, "MOTOR CONFIGURATION // HOT-SWAP");
+                            }
+                        }
 
             // Header
             Brain.Screen.setFont(prop20);
