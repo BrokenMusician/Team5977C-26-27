@@ -3,14 +3,24 @@
 		{
 			"name": "VEX V5",
 			"includePath": [
-				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/clang/8.0.0/include/**",
+				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include/**",
 				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include/c++/4.9.3/**",
 				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include/c++/4.9.3/arm-none-eabi/thumb",
-				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include",
 				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/include/**",
+				"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/clang/8.0.0/include/**",
 				"${workspaceFolder}/include/**",
 				"${workspaceFolder}/src/**"
 			],
+			"browse": {
+				"path": [
+					"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include/**",
+					"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include/c++/4.9.3/**",
+					"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/include/**",
+					"${workspaceFolder}/include/**",
+					"${workspaceFolder}/src/**"
+				],
+				"limitSymbolsToIncludedHeaders": true
+			},
 			"compilerPath": "C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_win32/clang/bin/clang.exe",
 			"cStandard": "gnu99",
 			"cppStandard": "gnu++11",
@@ -76,5 +86,6 @@
 			]
 		}
 	],
-	"version": 4
+	"version": 4,
+	"defaultConfiguration": "VEX V5"
 }
