@@ -150,7 +150,7 @@ MotorConfig motorConfigs[4] = {
     {1, false, 0, "LEFT A", true},
     {2, false, 0, "LEFT B", true},
     {3, false, 0, "RIGHT A", true},
-    {3, false, 0, "RIGHT B", true}
+    {4, false, 0, "RIGHT B", true}
 };
 int motorConfigSelected = 0;
 bool motorConfigEditing = false;
