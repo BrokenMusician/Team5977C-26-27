@@ -44,8 +44,8 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
-#define DEFAULT_RAM 6 /* MiB */
-#define MIN_RAM     6  /* MiB */
+#define DEFAULT_RAM 2 /* MiB */
+#define MIN_RAM     2  /* MiB */
 
 typedef struct atexit_listentry_s atexit_listentry_t;
 

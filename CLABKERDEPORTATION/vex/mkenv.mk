@@ -105,7 +105,9 @@ CXX_FLAGS = ${CFLAGS_CL} ${CFLAGS_V7} -Os -Wall -Werror=return-type -fno-rtti -f
 # linker flags
 # Doom needs a multi-megabyte zone allocator; VEX's linker script defaults
 # the C heap to 1 MiB, which is too small for the game.
-LNK_FLAGS = --defsym=_HEAP_SIZE=0x00C00000 -nostdlib -T "$(VEX_SDK_PATH)/lscript.ld" -R "$(VEX_SDK_PATH)/stdlib_0.lib" -Map="$(BUILD)/$(PROJECT).map" --gc-section -L"$(VEX_SDK_PATH)" ${TOOL_LIB}
+# Increase stack size to 2MB for DOOM's recursive functions (BSP traversal, etc.)
+# Increase heap to 16MB to accommodate both VEX runtime and DOOM zone allocator
+LNK_FLAGS = --defsym=_HEAP_SIZE=0x01000000 --defsym=_STACK_SIZE=0x00200000 -nostdlib -T "$(VEX_SDK_PATH)/lscript.ld" -R "$(VEX_SDK_PATH)/stdlib_0.lib" -Map="$(BUILD)/$(PROJECT).map" --gc-section -L"$(VEX_SDK_PATH)" ${TOOL_LIB}
 
 # future statuc library
 PROJECTLIB = lib$(PROJECT)

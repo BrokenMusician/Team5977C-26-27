@@ -4,10 +4,7 @@
 	"C_Cpp.default.cppStandard": "gnu++11",
 	"C_Cpp.default.cStandard": "gnu99",
 	"C_Cpp.default.systemIncludePath": [
-		"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include",
-		"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include/c++/4.9.3",
-		"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include/c++/4.9.3/arm-none-eabi/thumb",
-		"C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/clang/8.0.0/include"
+		"${config:vexrobotics.vexcode.Cpp.Sdk.Home}\\V5\\V5_20240802_15_00_00\\vexv5\\gcc\\include\\sys"
 	],
 	"C_Cpp.default.compilerPath": "C:/Users/kodie/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_win32/clang/bin/clang.exe",
 	"C_Cpp.intelliSenseEngine": "default",
